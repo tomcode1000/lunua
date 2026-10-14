@@ -4,121 +4,179 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lunua</title>
-<meta name="description" content="Catch Arc's one-balance, two-door USDC bugs before launch, and explain failed payments in plain words.">
+<meta name="description" content="USDC on Arc has two doors. Lunua guards both: pre-deploy checks for Arc's native/ERC-20 USDC duality, failed-payment forensics, and a deploy gate for AI coding agents.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23121826'/%3E%3Cpath d='M9 24V12a7 7 0 0 1 14 0v12' fill='none' stroke='%237aa2ff' stroke-width='2.5'/%3E%3Cpath d='M16 9v15' stroke='%2334d399' stroke-width='2.5'/%3E%3C/svg%3E">
 <style>
-:root{--bg:#0b0d12;--card:#141821;--line:#232a36;--text:#e7ebf2;--mute:#8b95a7;--acc:#5b8cff;--ok:#2fbf71;--bad:#ff5c5c;--warn:#f2b33d}
-@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#f6f7fb;--card:#fff;--line:#e3e7ef;--text:#121621;--mute:#5d677a;--acc:#2f62e6;--ok:#13965a;--bad:#d93b3b;--warn:#b57a00}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-main{max-width:860px;margin:0 auto;padding:32px 16px 64px}
-h1{font-size:28px;margin:0 0 4px}p.sub{color:var(--mute);margin:0 0 24px}
-.tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-.tabs button{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer;font:inherit}
-.tabs button[aria-selected=true]{border-color:var(--acc);color:var(--acc)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
-form{display:flex;gap:8px;flex-wrap:wrap}input{flex:1;min-width:0;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:12px;font:14px ui-monospace,Menlo,Consolas,monospace}
-.btn{background:var(--acc);color:#fff;border:0;border-radius:10px;padding:12px 18px;font:inherit;font-weight:600;cursor:pointer}.btn[disabled]{opacity:.5;cursor:wait}
-.ex{color:var(--mute);font-size:13px;margin-top:8px}.ex a{color:var(--acc);cursor:pointer}
-.row{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)}.row:first-child{border-top:0}
-.tag{flex:none;font-weight:700;font-size:12px;border-radius:6px;padding:2px 8px;height:fit-content;min-width:52px;text-align:center}
-.pass{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}.fail{background:color-mix(in srgb,var(--bad) 18%,transparent);color:var(--bad)}
-.warn{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}.info{background:color-mix(in srgb,var(--acc) 18%,transparent);color:var(--acc)}
-.t{font-weight:600}.d{color:var(--mute);font-size:14px}.fix{font-size:14px;margin-top:4px}
-.verdict{font-size:18px;font-weight:700;margin-bottom:6px}.mono{font:13px ui-monospace,Menlo,Consolas,monospace;word-break:break-all;color:var(--mute)}
-a{color:var(--acc)}footer{color:var(--mute);font-size:13px}
+:root{
+  --bg:#07090e;--bg2:#0c1018;--card:#10151f;--card2:#151b28;--line:#1f2736;--line2:#2a3446;
+  --text:#e8edf6;--mute:#8a94a8;--dim:#5d677b;
+  --native:#7aa2ff;--erc:#34d399;--acc:#7aa2ff;--bad:#ff6b6b;--warn:#f5b84a;--ok:#34d399;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;--sans:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  --glow:radial-gradient(60% 50% at 50% 0%,rgba(122,162,255,.16),transparent 70%);
+}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+  --bg:#f7f8fb;--bg2:#eef1f7;--card:#ffffff;--card2:#f4f6fb;--line:#e1e6ef;--line2:#cfd6e3;
+  --text:#0e1320;--mute:#556078;--dim:#7d879a;--native:#2f5fe0;--erc:#0f9a6a;--acc:#2f5fe0;--bad:#d63c3c;--warn:#b07400;--ok:#0f9a6a;
+  --glow:radial-gradient(60% 50% at 50% 0%,rgba(47,95,224,.10),transparent 70%)}}
+:root[data-theme="dark"]{--bg:#07090e}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
+code,.mono{font-family:var(--mono);font-size:.86em}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+/* nav */
+nav{position:sticky;top:0;z-index:10;backdrop-filter:blur(10px);background:color-mix(in srgb,var(--bg) 80%,transparent);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;gap:24px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.02em;color:var(--text);font-size:18px}
+.brand svg{width:26px;height:26px}
+nav .links{display:flex;gap:20px;margin-left:auto;font-size:14px}nav .links a{color:var(--mute)}nav .links a:hover{color:var(--text);text-decoration:none}
+.gh{border:1px solid var(--line2);border-radius:8px;padding:6px 12px;color:var(--text)!important}
+@media (max-width:760px){nav .links a:not(.gh){display:none}}
+/* hero */
+.hero{background:var(--glow);padding:72px 0 40px;border-bottom:1px solid var(--line)}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+@media (max-width:900px){.hero .wrap{grid-template-columns:1fr}}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font:500 12px var(--mono);color:var(--mute);border:1px solid var(--line2);border-radius:999px;padding:5px 12px;margin-bottom:22px}
+.eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
+h1{font-size:clamp(34px,5.2vw,58px);line-height:1.04;letter-spacing:-.035em;margin:0 0 20px;font-weight:800}
+h1 .n{color:var(--native)}h1 .e{color:var(--erc)}
+.lede{font-size:18px;color:var(--mute);max-width:560px;margin:0 0 28px}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--acc);color:#fff;border:0;border-radius:10px;padding:12px 18px;font:600 15px var(--sans);cursor:pointer;text-decoration:none!important}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line2)}
+.btn[disabled]{opacity:.55;cursor:progress}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:36px;max-width:560px}
+.stat{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:12px 14px}
+.stat b{display:block;font:700 22px var(--mono);letter-spacing:-.02em}.stat span{font-size:12.5px;color:var(--mute)}
+/* diagram */
+.diagram{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.diagram svg{width:100%;height:auto;display:block}
+.diagram .cap{font-size:13px;color:var(--mute);margin-top:6px;text-align:center}
+/* sections */
+section{padding:72px 0;border-bottom:1px solid var(--line)}
+.kicker{font:600 12px var(--mono);color:var(--acc);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+h2{font-size:clamp(26px,3.4vw,38px);letter-spacing:-.03em;line-height:1.1;margin:0 0 14px}
+.sub{color:var(--mute);max-width:720px;margin:0 0 32px}
+/* console */
+.console{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.console .bar{display:flex;gap:6px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--card2)}
+.console .bar i{width:10px;height:10px;border-radius:50%;background:var(--line2)}
+.tabs{display:flex;gap:4px;margin-left:12px;flex-wrap:wrap}
+.tabs button{background:transparent;border:1px solid transparent;color:var(--mute);border-radius:8px;padding:6px 12px;font:500 13px var(--sans);cursor:pointer}
+.tabs button[aria-selected=true]{background:var(--bg);border-color:var(--line2);color:var(--text)}
+.console .body{padding:20px}
+form{display:flex;gap:10px;flex-wrap:wrap}
+input{flex:1;min-width:0;background:var(--bg);color:var(--text);border:1px solid var(--line2);border-radius:10px;padding:13px 14px;font:14px var(--mono);outline:none}
+input:focus{border-color:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 22%,transparent)}
+.ex{color:var(--dim);font-size:13px;margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{font:500 12px var(--mono);border:1px solid var(--line2);border-radius:999px;padding:3px 10px;color:var(--mute);cursor:pointer;background:transparent}
+.chip:hover{color:var(--text);border-color:var(--acc)}
+#out:empty{display:none}#out{border-top:1px solid var(--line);padding:20px}
+.verdict{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:700;margin-bottom:4px}
+.meta{font:12.5px var(--mono);color:var(--dim);word-break:break-all;margin-bottom:16px}
+.row{display:grid;grid-template-columns:64px 1fr;gap:14px;padding:14px 0;border-top:1px solid var(--line)}
+.tag{font:700 11px var(--mono);border-radius:6px;padding:3px 0;text-align:center;height:fit-content;letter-spacing:.04em}
+.pass{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}.fail{background:color-mix(in srgb,var(--bad) 15%,transparent);color:var(--bad)}
+.warn{background:color-mix(in srgb,var(--warn) 15%,transparent);color:var(--warn)}.info{background:color-mix(in srgb,var(--acc) 15%,transparent);color:var(--acc)}
+.t{font-weight:600}.d{color:var(--mute);font-size:14px}.fix{font-size:14px;margin-top:6px}
+.callout{border:1px solid var(--line);background:var(--bg2);border-radius:12px;padding:14px 16px;margin:12px 0;font-size:15px}
+.callout.w{border-color:color-mix(in srgb,var(--warn) 40%,var(--line))}
+.steps{font:12.5px var(--mono);color:var(--mute);margin:8px 0 14px;padding-left:18px}
+.spin{width:14px;height:14px;border:2px solid var(--line2);border-top-color:var(--acc);border-radius:50%;animation:s .8s linear infinite;display:inline-block}
+@keyframes s{to{transform:rotate(360deg)}}
+/* evidence */
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{text-align:left;font:600 12px var(--mono);color:var(--dim);text-transform:uppercase;letter-spacing:.06em;padding:0 12px 10px}
+td{padding:14px 12px;border-top:1px solid var(--line);vertical-align:top}
+td:first-child{font-weight:600;white-space:nowrap}
+.tbl{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 8px 4px;overflow-x:auto}
+/* grid cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
+.card h3{margin:0 0 6px;font-size:16px;letter-spacing:-.01em}.card p{margin:0;color:var(--mute);font-size:14.5px}
+.card .ic{font:600 12px var(--mono);color:var(--acc);margin-bottom:12px;display:block}
+.card ul{margin:10px 0 0;padding-left:18px;color:var(--mute);font-size:14px}
+pre{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:16px;overflow-x:auto;font:13px/1.65 var(--mono);color:var(--text);margin:0}
+pre .c{color:var(--dim)}pre .g{color:var(--ok)}pre .r{color:var(--bad)}pre .y{color:var(--warn)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+@media (max-width:860px){.two{grid-template-columns:1fr}}
+.addr{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.addr:first-child{border-top:0}.addr a{font:13px var(--mono);word-break:break-all}
+footer{padding:36px 0 56px;color:var(--dim);font-size:13.5px}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+.beta{font:500 11px var(--mono);color:var(--mute);border:1px solid var(--line2);border-radius:6px;padding:2px 7px;margin-left:4px;letter-spacing:0}
+.net{display:inline-flex;align-items:center;gap:7px;font:500 12px var(--mono);color:var(--mute)}.net i{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
+nav .links{align-items:center}
+.scan{background:var(--glow);min-height:calc(100vh - 140px);padding:64px 0 40px}
+.scan .wrap{max-width:880px}
+.scan h1{font-size:clamp(30px,4.6vw,46px);text-align:center;margin-bottom:10px}
+.scan .lede{text-align:center;margin:0 auto 28px;font-size:16.5px}
+.search{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line2);border-radius:14px;padding:8px 8px 8px 16px;box-shadow:0 10px 40px rgba(0,0,0,.18)}
+.search:focus-within{border-color:var(--acc);box-shadow:0 0 0 4px color-mix(in srgb,var(--acc) 18%,transparent)}
+.search svg{width:20px;height:20px;color:var(--dim);flex:none}
+.search input{border:0;background:transparent;padding:10px 4px;box-shadow:none!important;font-size:15px}
+.kind{font:600 11px var(--mono);color:var(--acc);white-space:nowrap}
+.scan .ex{justify-content:center;margin-top:14px}
+#out{border:0;padding:0;margin-top:28px}
+.report{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.rhead{display:flex;gap:18px;align-items:center;padding:20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.score{width:74px;height:74px;border-radius:50%;display:grid;place-items:center;font:800 15px var(--mono);flex:none;border:5px solid}
+.score.s-fail{border-color:var(--bad);color:var(--bad)}.score.s-warn{border-color:var(--warn);color:var(--warn)}.score.s-pass{border-color:var(--ok);color:var(--ok)}.score.s-info{border-color:var(--acc);color:var(--acc)}
+.rhead .verdict{margin:0}.rhead .meta{margin:4px 0 0}
+.counts{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}.counts span{font:600 11.5px var(--mono);border-radius:6px;padding:3px 8px}
+.rbody{padding:4px 20px 16px}
+.rbody .row:first-child{border-top:0}
+.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-top:44px}
+.ck{border:1px solid var(--line);background:color-mix(in srgb,var(--card) 70%,transparent);border-radius:12px;padding:12px 14px}
+.ck b{display:block;font:600 13px var(--mono);margin-bottom:2px}.ck span{font-size:13px;color:var(--mute)}
+#out:not(:empty) ~ .checks{display:none}
 </style>
 </head>
 <body>
-<main>
-  <h1>Lunua</h1>
-  <p class="sub">On Arc, USDC is one balance with two doors: native (18 decimals, what wallets use) and ERC-20 (6 decimals, <span class="mono">0x3600…</span>). Code copied from Ethereum treats them as two assets, and payments fail with no reason given. Check a contract before launch, or find out why a payment failed.</p>
+<nav><div class="wrap">
+  <a class="brand" href="./"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#121826"/><path d="M9 24V12a7 7 0 0 1 14 0v12" fill="none" stroke="#7aa2ff" stroke-width="2.5"/><path d="M16 9v15" stroke="#34d399" stroke-width="2.5"/></svg>Lunua <span class="beta">Arc scanner</span></a>
+  <div class="links"><span class="net"><i></i>Arc mainnet · 5042</span><a class="gh" href="https://github.com/tomcode1000/lunua" target="_blank" rel="noopener">GitHub</a></div>
+</div></nav>
 
-  <div class="tabs" role="tablist">
-    <button role="tab" aria-selected="true" data-tab="tx">Why did my payment fail?</button>
-    <button role="tab" aria-selected="false" data-tab="check">Check a contract</button>
+<main class="scan">
+  <div class="wrap">
+    <h1>Arc USDC scanner</h1>
+    <p class="lede">Paste a <b>contract address</b> to scan it for Arc's native / ERC-20 USDC traps, or a <b>transaction hash</b> to find out why a payment failed.</p>
+    <form id="f-scan" class="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2"/></svg>
+      <input id="i-scan" placeholder="0x… address or transaction hash" autocomplete="off" spellcheck="false" required pattern="0x([0-9a-fA-F]{40}|[0-9a-fA-F]{64})">
+      <span class="kind" id="kind"></span>
+      <button class="btn">Scan</button>
+    </form>
+    <div class="ex">Try:
+      <button class="chip" data-v="0xA8Bd8C8F580d5f00cEF41bfA524555de17E3B38F">PortedVault</button>
+      <button class="chip" data-v="0x8f7349Dc451DFbC6B3773b49e33fa836b89C71f3">ArcVault</button>
+      <button class="chip" data-v="0x0970462cece33d425dba716cbf4855bb4f44fcf5">Live escrow</button>
+      <button class="chip" data-v="0xc2c6412823f3fbb5c6295aa5ddbaeaa779dc9fd1a0e20e6ef0a3920d671bb793">Failed 4 USDC tx</button>
+      <button class="chip" data-v="0x44e05db307b73dded0a2bc78feb80cdc40393d50fc96a8747cd27eac73596fb6">Failed 0.01 USDC tx</button>
+    </div>
+
+    <div id="out" aria-live="polite"></div>
+
+    <div class="checks" id="checks">
+      <div class="ck"><b>Native receive</b><span>Simulates a wallet "Send USDC" (1 USDC native) via eth_call state override</span></div>
+      <div class="ck"><b>Double count</b><span>Bytecode reads BALANCE/SELFBALANCE and 0x3600… together</span></div>
+      <div class="ck"><b>Dust</b><span>Sub-micro native value invisible to balanceOf</span></div>
+      <div class="ck"><b>PREVRANDAO</b><span>Always 0 on Arc: broken randomness</span></div>
+      <div class="ck"><b>SELFDESTRUCT</b><span>Moves the contract's entire USDC balance</span></div>
+      <div class="ck"><b>Tx forensics</b><span>Replay at block N−1, classify, rebuild on the ERC-20 rail</span></div>
+    </div>
   </div>
-
-  <section class="card" id="tab-tx">
-    <form id="f-tx"><input id="i-tx" placeholder="Failed transaction hash (0x…)" autocomplete="off" required pattern="0x[0-9a-fA-F]{64}"><button class="btn">Explain</button></form>
-    <div class="ex">Try real ones: <a data-fill="i-tx" data-v="0xc2c6412823f3fbb5c6295aa5ddbaeaa779dc9fd1a0e20e6ef0a3920d671bb793">4 USDC wallet send to a live escrow (2 Oct 2026)</a> · <a data-fill="i-tx" data-v="0x44e05db307b73dded0a2bc78feb80cdc40393d50fc96a8747cd27eac73596fb6">0.01 USDC wallet send to PortedVault</a></div>
-  </section>
-  <section class="card" id="tab-check" hidden>
-    <form id="f-check"><input id="i-check" placeholder="Contract address on Arc mainnet (0x…)" autocomplete="off" required pattern="0x[0-9a-fA-F]{40}"><button class="btn">Run check</button></form>
-    <div class="ex" id="ex-check">Try: <a data-fill="i-check" data-v="0x0970462cece33d425dba716cbf4855bb4f44fcf5">a live escrow</a></div>
-  </section>
-
-  <div id="out"></div>
-
-  <footer>Every result is a live simulation on Arc mainnet (no funds move) plus a scan of the deployed bytecode. Rules from Arc's <a href="https://docs.arc.io/arc/references/evm-differences" target="_blank" rel="noopener">EVM differences</a> and <a href="https://docs.arc.io/arc/tutorials/porting-contracts-to-arc" target="_blank" rel="noopener">porting guide</a>. CLI + AI-agent skill: <a href="https://github.com/" id="repo" target="_blank" rel="noopener">repo</a>.</footer>
 </main>
-<script type="module">
-import { ARC, client, checkContract, diagnoseTx } from "./engine/lunua.mjs";
-const DEMO = { ported: "0xA8Bd8C8F580d5f00cEF41bfA524555de17E3B38F", fixed: "0x8f7349Dc451DFbC6B3773b49e33fa836b89C71f3",
-  failedTx: "0x44e05db307b73dded0a2bc78feb80cdc40393d50fc96a8747cd27eac73596fb6", registry: "0x966Bf58DB6F257C63Edb11bF006B5eB3160721DE", repo: "https://github.com/tomcode1000/lunua" };
-const rpc = client(ARC.mainnet.rpc);
-const $ = (s) => document.querySelector(s);
-const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const out = $("#out");
 
-document.querySelectorAll("[data-tab]").forEach((b) => b.onclick = () => {
-  document.querySelectorAll("[data-tab]").forEach((x) => x.setAttribute("aria-selected", x === b));
-  $("#tab-tx").hidden = b.dataset.tab !== "tx"; $("#tab-check").hidden = b.dataset.tab !== "check"; out.innerHTML = "";
-});
-document.addEventListener("click", (e) => { const a = e.target.closest("[data-fill]"); if (a) { $("#" + a.dataset.fill).value = a.dataset.v; $("#" + a.dataset.fill).form.requestSubmit(); } });
-if (DEMO.ported) $("#ex-check").innerHTML += ` · <a data-fill="i-check" data-v="${DEMO.ported}">PortedVault (copied from Ethereum)</a> · <a data-fill="i-check" data-v="${DEMO.fixed}">ArcVault (fixed)</a>`;
-if (DEMO.repo) $("#repo").href = DEMO.repo;
+<footer><div class="wrap">
+  <span>Live simulation on Arc mainnet · no funds move · results attestable to <a href="https://explorer.arc.io/address/0x966Bf58DB6F257C63Edb11bF006B5eB3160721DE" target="_blank" rel="noopener">PreflightRegistry</a></span>
+  <span>CLI · agent skill · CI gate: <a href="https://github.com/tomcode1000/lunua" target="_blank" rel="noopener">github.com/tomcode1000/lunua</a></span>
+</div></footer>
 
-async function busy(form, fn) {
-  const btn = form.querySelector("button"); btn.disabled = true; out.innerHTML = `<div class="card d">Simulating on Arc mainnet…</div>`;
-  try { await fn(); } catch (e) { out.innerHTML = `<div class="card"><span class="tag fail">ERROR</span> ${esc(e.message)}</div>`; }
-  btn.disabled = false;
-}
-
-$("#f-check").onsubmit = (e) => { e.preventDefault(); busy(e.target, async () => {
-  const r = await checkContract($("#i-check").value.trim(), { rpc });
-  const fails = r.checks.filter((c) => c.status === "fail").length;
-  out.innerHTML = `<div class="card"><div class="verdict">${!r.isContract ? "Not a contract" : fails ? `❌ ${fails} blocking issue${fails > 1 ? "s" : ""}: do not launch yet` : "✅ No blocking issues"}</div>
-    <div class="mono">${esc(r.address)} · <a href="${ARC.mainnet.explorer}/address/${esc(r.address)}" target="_blank" rel="noopener">explorer</a></div></div>
-    <div class="card">${r.checks.map((c) => `<div class="row"><span class="tag ${c.status}">${c.status.toUpperCase()}</span><div>
-      <div class="t">${esc(c.title)}</div>${c.detail ? `<div class="d">${esc(c.detail)}</div>` : ""}
-      ${c.fix && c.status !== "pass" ? `<div class="fix"><b>Fix:</b> ${esc(c.fix)}</div>` : ""}
-      ${c.docs && c.status !== "pass" ? `<div class="d"><a href="${c.docs}" target="_blank" rel="noopener">Arc docs</a></div>` : ""}</div></div>`).join("")}</div>`;
-}); };
-
-$("#f-tx").onsubmit = (e) => { e.preventDefault(); busy(e.target, async () => {
-  const r = await diagnoseTx($("#i-tx").value.trim(), { rpc });
-  if (!r.found) { out.innerHTML = `<div class="card">Transaction not found on Arc mainnet.</div>`; return; }
-  out.innerHTML = `<div class="card"><div class="verdict">${r.status === "failed" ? "❌ Payment failed" : r.status === "success" ? "✅ Payment succeeded" : "⏳ Pending"}</div>
-    <div class="mono">${esc(r.amount)} USDC · from ${esc(r.from)} → ${esc(r.to)} · <a href="${ARC.mainnet.explorer}/tx/${esc(r.hash)}" target="_blank" rel="noopener">explorer</a></div></div>
-    <div class="card"><div class="t">What happened</div><p>${esc(r.cause)}</p>
-    ${r.caution ? `<p class="d"><b>Before you resend:</b> ${esc(r.caution)}</p>` : ""}
-    ${r.fix ? `<div class="t">Fix</div><p>${esc(r.fix.label)}. ${r.fixVerified ? "We replayed this fix at the original block and it <b>succeeds</b>." : `${r.fix.steps.length} wallet confirmations. Step 2 depends on step 1, so it can't be pre-simulated.`}</p>
-      <button class="btn" id="resend">Resend correctly with my wallet</button><div class="d" id="rs"></div>` : ""}</div>`;
-  if (r.fix) $("#resend").onclick = () => resend(r);
-}); };
-
-// Shareable links: ?tx=<hash> or ?address=<contract> run immediately.
-const q = new URLSearchParams(location.search);
-if (q.get("address")) { document.querySelector('[data-tab="check"]').click(); $("#i-check").value = q.get("address"); $("#f-check").requestSubmit(); }
-else if (q.get("tx")) { $("#i-tx").value = q.get("tx"); $("#f-tx").requestSubmit(); }
-
-async function resend(r) {
-  const s = $("#rs"), eth = window.ethereum;
-  if (!eth) { s.textContent = "No browser wallet found. In your wallet, send the USDC token (0x3600…) instead of the native coin."; return; }
-  try {
-    const [from] = await eth.request({ method: "eth_requestAccounts" });
-    if (from.toLowerCase() !== r.from.toLowerCase()) { s.textContent = `Connect the wallet that sent the original payment (${r.from}).`; return; }
-    try { await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x13b2" }] }); }
-    catch (err) { if (err.code === 4902) await eth.request({ method: "wallet_addEthereumChain", params: [{ chainId: "0x13b2", chainName: "Arc", rpcUrls: [ARC.mainnet.rpc], blockExplorerUrls: [ARC.mainnet.explorer], nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 } }] }); else throw err; }
-    const links = [];
-    for (const [i, st] of r.fix.steps.entries()) {
-      s.innerHTML = `${links.join(" · ")} Confirm step ${i + 1} of ${r.fix.steps.length} in your wallet: ${esc(st.label)}…`;
-      const hash = await eth.request({ method: "eth_sendTransaction", params: [{ from, to: st.to, data: st.data, value: "0x0" }] });
-      for (let k = 0; k < 20; k++) { const rc = await eth.request({ method: "eth_getTransactionReceipt", params: [hash] }); if (rc) { if (rc.status !== "0x1") throw new Error(`Step ${i + 1} failed: ${hash}`); break; } await new Promise((z) => setTimeout(z, 500)); }
-      links.push(`step ${i + 1} ✅ <a href="${ARC.mainnet.explorer}/tx/${hash}" target="_blank" rel="noopener">${hash.slice(0, 12)}…</a>`);
-    }
-    s.innerHTML = links.join(" · ") + " · Done.";
-  } catch (e) { s.textContent = e.message; }
-}
-</script>
+<script type="module" src="./app.mjs"></script>
 </body>
 </html>
