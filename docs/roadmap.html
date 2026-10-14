@@ -24,10 +24,10 @@
 .rail::before { content: ""; position: absolute; left: 9px; top: 6px; bottom: 6px; width: 1px; background: var(--rule2); }
 .ph { position: relative; padding-bottom: 36px; }
 .ph::before { content: ""; position: absolute; left: -32px; top: 4px; width: 11px; height: 11px; border: 1.5px solid var(--ink2); background: var(--bg); }
-.ph.live::before { background: var(--pass); border-color: var(--pass); }
+.ph.done::before { background: var(--pass); border-color: var(--pass); }
 .ph-h { display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap; margin-bottom: 12px; }
 .ph-h .tag { font: 600 11px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--mute); }
-.ph.live .ph-h .tag { color: var(--pass); }
+.ph.done .ph-h .tag { color: var(--pass); }
 .ph-h h2 { font: 600 21px var(--sans); letter-spacing: -.01em; margin: 0; }
 .ph-b { display: grid; grid-template-columns: 1.15fr .85fr; border: 1px solid var(--rule); background: var(--bg1); }
 @media (max-width: 860px) { .ph-b { grid-template-columns: 1fr; } }
@@ -80,7 +80,7 @@
   </div>
 
   <div class="rail">
-    <div class="ph live">
+    <div class="ph done">
       <div class="ph-h"><span class="tag">Phase 1 · Live</span><h2>Detect, explain and gate</h2></div>
       <div class="ph-b">
         <div>
