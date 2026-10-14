@@ -1,9 +1,9 @@
 ---
-name: arc-preflight
-description: "Stops Arc-specific money bugs before a contract ships. Use whenever writing, porting, reviewing or deploying a Solidity contract for Arc (chain 5042 / testnet 5042002), or when a user says a USDC payment on Arc 'failed' with no reason. Complements Circle's use-arc skill: use-arc teaches the chain; this skill enforces the contract-level rules and REQUIRES a passing `arc-preflight check` before any deploy. Triggers: Arc, Arc mainnet, deploy to Arc, escrow/vault/pool on Arc, payment failed on Arc, USDC gas."
+name: lunua
+description: "Stops Arc-specific money bugs before a contract ships. Use whenever writing, porting, reviewing or deploying a Solidity contract for Arc (chain 5042 / testnet 5042002), or when a user says a USDC payment on Arc 'failed' with no reason. Complements Circle's use-arc skill: use-arc teaches the chain; this skill enforces the contract-level rules and REQUIRES a passing `lunua check` before any deploy. Triggers: Arc, Arc mainnet, deploy to Arc, escrow/vault/pool on Arc, payment failed on Arc, USDC gas."
 ---
 
-# Arc Preflight
+# Lunua
 
 On Arc, USDC is **one balance with two doors**:
 - **native door**: 18 decimals, `msg.value`, `address(x).balance`. Wallets (MetaMask, Rabby) use this door when a user presses "Send USDC".
@@ -16,8 +16,8 @@ Code written for Ethereum assumes these are two different assets. That assumptio
 **Before ANY deploy to Arc (mainnet or testnet) you MUST run:**
 
 ```bash
-npx arc-preflight check --code out/<Contract>.sol/<Contract>.json   # before deploying
-npx arc-preflight check <deployed-address>                          # after deploying
+npx lunua check --code out/<Contract>.sol/<Contract>.json   # before deploying
+npx lunua check <deployed-address>                          # after deploying
 ```
 
 - Exit code `1` = at least one FAIL. **Do not deploy.** Fix the code, rebuild, run again.
@@ -41,7 +41,7 @@ npx arc-preflight check <deployed-address>                          # after depl
 
 ## When a user says "my USDC payment on Arc failed"
 
-Run `npx arc-preflight tx <hash>`. It replays the transaction at its block, explains the cause in plain words and, for the common case (native send to an ERC-20-only contract), prints a corrected ERC-20 transaction that it has already simulated as succeeding. Offer that fix; never resend on the user's behalf without their confirmation.
+Run `npx lunua tx <hash>`. It replays the transaction at its block, explains the cause in plain words and, for the common case (native send to an ERC-20-only contract), prints a corrected ERC-20 transaction that it has already simulated as succeeding. Offer that fix; never resend on the user's behalf without their confirmation.
 
 ## Sources
 - Arc EVM differences: https://docs.arc.io/arc/references/evm-differences

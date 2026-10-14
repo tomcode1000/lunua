@@ -1,4 +1,6 @@
-# Arc Preflight
+# Lunua
+
+**USDC on Arc has two doors. Lunua guards both.**
 
 **Catch Arc's "one balance, two doors" USDC bugs before launch, and tell users in plain words why their payment failed.**
 
@@ -25,10 +27,10 @@ Circle documents these rules (EVM differences, porting guide) as a **manual chec
 ## What it does
 
 ### 1. "Why did my payment fail?" (for users)
-Paste a failed tx hash. Arc Preflight replays it **at its original block** on Arc mainnet and explains it:
+Paste a failed tx hash. Lunua replays it **at its original block** on Arc mainnet and explains it:
 
 ```
-$ arc-preflight tx 0xc2c6412823f3fbb5c6295aa5ddbaeaa779dc9fd1a0e20e6ef0a3920d671bb793
+$ lunua tx 0xc2c6412823f3fbb5c6295aa5ddbaeaa779dc9fd1a0e20e6ef0a3920d671bb793
 status: failed   amount 4 USDC
 Your wallet sent 4 USDC the native way (like sending gas money). The contract you sent it to
 only accepts USDC through the token interface (0x3600…), so it rejected the payment.
@@ -39,8 +41,8 @@ It then builds the corrected transaction using the token interface: a `transfer`
 
 ### 2. "Check my contract" (for builders), before OR after deploy
 ```
-$ arc-preflight check --code build/PortedVault.json      # undeployed bytecode
-$ arc-preflight check 0xA8Bd8C8F580d5f00cEF41bfA524555de17E3B38F
+$ lunua check --code build/PortedVault.json      # undeployed bytecode
+$ lunua check 0xA8Bd8C8F580d5f00cEF41bfA524555de17E3B38F
 ❌ FAIL  Wallet "Send USDC" will FAIL
 ⚠️ WARN  Reads BOTH the native balance and USDC 0x3600… (double-count risk)
 ✅ PASS  No SELFDESTRUCT
@@ -59,9 +61,9 @@ $ arc-preflight check 0xA8Bd8C8F580d5f00cEF41bfA524555de17E3B38F
 Contracts that never touch USDC are not failed for rejecting native sends (shown as INFO).
 
 ### 3. The deploy gate for AI coding agents
-`skill/arc-preflight/SKILL.md` is a skill for Claude Code, Cursor and other agents. It teaches the contract-level rules Circle's `use-arc` skill doesn't cover (`receive()`, allowances vs native paths, sweeps, `prevrandao`, `SELFDESTRUCT`, zero-address and blocklist reverts) and **requires** `arc-preflight check` to exit 0 before any deploy. A vibe-coded escrow gets caught before it ships, not after users lose gas.
+`skill/lunua/SKILL.md` is a skill for Claude Code, Cursor and other agents. It teaches the contract-level rules Circle's `use-arc` skill doesn't cover (`receive()`, allowances vs native paths, sweeps, `prevrandao`, `SELFDESTRUCT`, zero-address and blocklist reverts) and **requires** `lunua check` to exit 0 before any deploy. A vibe-coded escrow gets caught before it ships, not after users lose gas.
 
-The same exit code works as a CI step: run `arc-preflight check --code <artifact>` in GitHub Actions to block a merge.
+The same exit code works as a CI step: run `lunua check --code <artifact>` in GitHub Actions to block a merge.
 
 ### 4. On-chain registry
 `PreflightRegistry` stores results pinned to the target's **code hash**, so a result goes stale automatically if the code changes. Wallets and apps can call `status(attester, target)` before letting a user send.
@@ -70,7 +72,7 @@ The same exit code works as a CI step: run `arc-preflight check --code <artifact
 
 | Contract | Address |
 |---|---|
-| PreflightRegistry | [`0x966Bf58DB6F257C63Edb11bF006B5eB3160721DE`](https://explorer.arc.io/address/0x966Bf58DB6F257C63Edb11bF006B5eB3160721DE) |
+| PreflightRegistry (Lunua registry) | [`0x966Bf58DB6F257C63Edb11bF006B5eB3160721DE`](https://explorer.arc.io/address/0x966Bf58DB6F257C63Edb11bF006B5eB3160721DE) |
 | PortedVault (demo: written the Ethereum way) | [`0xA8Bd8C8F580d5f00cEF41bfA524555de17E3B38F`](https://explorer.arc.io/address/0xA8Bd8C8F580d5f00cEF41bfA524555de17E3B38F) |
 | ArcVault (demo: fixed after the report) | [`0x8f7349Dc451DFbC6B3773b49e33fa836b89C71f3`](https://explorer.arc.io/address/0x8f7349Dc451DFbC6B3773b49e33fa836b89C71f3) |
 
@@ -83,11 +85,11 @@ Registry: PortedVault recorded as failing (mask 33 = native-receive + prevrandao
 ## Run it
 
 ```bash
-node bin/arc-preflight.mjs tx <hash>              # explain a failed payment
-node bin/arc-preflight.mjs check <address>        # check a deployed contract
-node bin/arc-preflight.mjs check --code <file.json|0xruntimehex>   # before deploying
+node bin/lunua.mjs tx <hash>              # explain a failed payment
+node bin/lunua.mjs check <address>        # check a deployed contract
+node bin/lunua.mjs check --code <file.json|0xruntimehex>   # before deploying
 ```
-Node 18+, no dependencies (the engine only uses `fetch`). The web page (`web/`) is static and calls the Arc RPC straight from the browser, so it needs no server.
+Node 18+, no dependencies (the engine only uses `fetch`). The web page (`docs/`, served by GitHub Pages) is static and calls the Arc RPC straight from the browser, so it needs no server.
 
 Contracts: `contracts/src/`. Build with `node scripts/compile.cjs` (solc 0.8.30).
 
@@ -97,7 +99,7 @@ Contracts: `contracts/src/`. Build with `node scripts/compile.cjs` (solc 0.8.30)
 - The two-step approve + deposit fix can't be pre-simulated in one `eth_call`, because step 2 depends on step 1. The single-transfer fix is simulated at the original block.
 
 ## Next
-GitHub Action wrapper · a watcher that runs preflight on every new Arc contract and posts results to the registry · wallet integration ("this contract rejects native sends: send via token?") · source-level checks (msg.value vs 6-dp amounts).
+GitHub Action wrapper · a watcher that runs Lunua on every new Arc contract and posts results to the registry · wallet integration ("this contract rejects native sends: send via token?") · source-level checks (msg.value vs 6-dp amounts).
 
 ## Sources
 [Arc EVM differences](https://docs.arc.io/arc/references/evm-differences) · [Porting contracts to Arc](https://docs.arc.io/arc/tutorials/porting-contracts-to-arc) · [Stablecoin native model](https://docs.arc.io/arc/concepts/stablecoin-native-model) · [Circle skills](https://github.com/circlefin/skills)

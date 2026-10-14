@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// arc-preflight check <address> [--testnet] [--json]   exit 1 if any FAIL (use as a deploy gate)
-// arc-preflight check --code <file.json|0xhex>                  check BEFORE deploying (runtime bytecode)
-// arc-preflight tx <hash> [--testnet] [--json]         explain a failed transaction
+// lunua check <address> [--testnet] [--json]   exit 1 if any FAIL (use as a deploy gate)
+// lunua check --code <file.json|0xhex>                  check BEFORE deploying (runtime bytecode)
+// lunua tx <hash> [--testnet] [--json]         explain a failed transaction
 import { readFileSync } from "node:fs";
-import { ARC, client, checkContract, diagnoseTx } from "../engine/preflight.mjs";
+import { ARC, client, checkContract, diagnoseTx } from "../engine/lunua.mjs";
 
 const [cmd, target, ...rest] = process.argv.slice(2);
 const net = rest.includes("--testnet") ? ARC.testnet : ARC.mainnet;
@@ -21,7 +21,7 @@ if (cmd === "check" && target) {
   const r = await checkContract(addr, { rpc, code });
   if (json) console.log(JSON.stringify(r, null, 2));
   else {
-    console.log(`\nArc Preflight report for ${code ? `undeployed code (${r.codeSize} bytes)` : r.address} (chain ${net.chainId})\n`);
+    console.log(`\nLunua report for ${code ? `undeployed code (${r.codeSize} bytes)` : r.address} (chain ${net.chainId})\n`);
     for (const c of r.checks) {
       console.log(`${icon[c.status]}  ${c.title}`);
       if (c.detail) console.log(`         ${c.detail}`);
@@ -46,6 +46,6 @@ if (cmd === "check" && target) {
     console.log(`\nExplorer: ${net.explorer}/tx/${r.hash}\n`);
   }
 } else {
-  console.log("usage:\n  arc-preflight check <contract-address> [--testnet] [--json]\n  arc-preflight tx <tx-hash> [--testnet] [--json]");
+  console.log("usage:\n  lunua check <contract-address> [--testnet] [--json]\n  lunua tx <tx-hash> [--testnet] [--json]");
   process.exit(2);
 }

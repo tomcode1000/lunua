@@ -8,7 +8,7 @@ interface IERC20 {
 }
 
 /// @notice DEMO ONLY. A savings vault written the Ethereum way and copied to Arc unchanged.
-///         It has three Arc bugs that Arc Preflight catches:
+///         It has three Arc bugs that Lunua catches:
 ///         1. no receive(): a wallet "Send USDC" (native) reverts
 ///         2. totalAssets() adds the native balance and the ERC-20 balance: double counts
 ///         3. weekly prize draw uses block.prevrandao, which is always 0 on Arc

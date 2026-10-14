@@ -7,7 +7,7 @@ interface IERC20 {
     function balanceOf(address) external view returns (uint256);
 }
 
-/// @notice The same vault, fixed for Arc after Arc Preflight's report.
+/// @notice The same vault, fixed for Arc after Lunua's report.
 ///         - receive() credits a native wallet send as a deposit (native and ERC-20 are one asset)
 ///         - totalAssets() reads one view only
 ///         - no on-chain randomness

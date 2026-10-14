@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 /// @title PreflightRegistry
-/// @notice On-chain record of Arc Preflight results. Anyone can post a result; readers
+/// @notice On-chain record of Lunua results. Anyone can post a result; readers
 ///         decide which attesters they trust. A result is pinned to the target's code hash,
 ///         so it goes stale automatically if the code at that address changes.
 contract PreflightRegistry {
@@ -13,7 +13,7 @@ contract PreflightRegistry {
         uint64 checkedAt; // block timestamp
     }
 
-    // Check ids (bit positions), mirrored in engine/preflight.mjs
+    // Check ids (bit positions), mirrored in engine/lunua.mjs
     // 0 native-receive, 1 dust, 2 two-views, 3 allowance, 4 selfdestruct, 5 prevrandao
 
     mapping(address attester => mapping(address target => Result)) public results;

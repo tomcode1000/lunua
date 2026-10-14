@@ -1,9 +1,9 @@
 {
-  "name": "arc-preflight",
+  "name": "lunua",
   "version": "0.1.0",
   "description": "Catch Arc USDC two-door bugs before launch; explain failed payments.",
   "scripts": {
-    "check": "node bin/arc-preflight.mjs check"
+    "check": "node bin/lunua.mjs check"
   },
   "keywords": [],
   "author": "",
@@ -12,7 +12,7 @@
     "solc": "^0.8.30"
   },
   "bin": {
-    "arc-preflight": "bin/arc-preflight.mjs"
+    "lunua": "bin/lunua.mjs"
   },
   "type": "module"
 }

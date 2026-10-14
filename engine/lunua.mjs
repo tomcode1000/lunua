@@ -1,4 +1,4 @@
-// Arc Preflight engine. Runs in the browser and in Node 18+ (uses fetch only).
+// Lunua engine. Runs in the browser and in Node 18+ (uses fetch only).
 // Every check is either a live simulation against an Arc RPC (eth_call with a
 // state override, so no real funds move) or a scan of the deployed bytecode.
 

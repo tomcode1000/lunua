@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Deploys Arc Preflight's on-chain parts to Arc MAINNET and runs the live demo transactions.
+# Deploys Lunua's on-chain parts to Arc MAINNET and runs the live demo transactions.
 # Prereq (once, typed by YOU, key never leaves your machine):
 #   ~/.local/bin/arc-cast wallet import preflight --interactive
 # Cost: about 0.03-0.05 USDC of gas in total.

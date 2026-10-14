@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Arc Preflight</title>
+<title>Lunua</title>
 <meta name="description" content="Catch Arc's one-balance, two-door USDC bugs before launch, and explain failed payments in plain words.">
 <style>
 :root{--bg:#0b0d12;--card:#141821;--line:#232a36;--text:#e7ebf2;--mute:#8b95a7;--acc:#5b8cff;--ok:#2fbf71;--bad:#ff5c5c;--warn:#f2b33d}
@@ -29,7 +29,7 @@ a{color:var(--acc)}footer{color:var(--mute);font-size:13px}
 </head>
 <body>
 <main>
-  <h1>Arc Preflight</h1>
+  <h1>Lunua</h1>
   <p class="sub">On Arc, USDC is one balance with two doors: native (18 decimals, what wallets use) and ERC-20 (6 decimals, <span class="mono">0x3600…</span>). Code copied from Ethereum treats them as two assets, and payments fail with no reason given. Check a contract before launch, or find out why a payment failed.</p>
 
   <div class="tabs" role="tablist">
@@ -42,7 +42,7 @@ a{color:var(--acc)}footer{color:var(--mute);font-size:13px}
     <div class="ex">Try real ones: <a data-fill="i-tx" data-v="0xc2c6412823f3fbb5c6295aa5ddbaeaa779dc9fd1a0e20e6ef0a3920d671bb793">4 USDC wallet send to a live escrow (2 Oct 2026)</a> · <a data-fill="i-tx" data-v="0x44e05db307b73dded0a2bc78feb80cdc40393d50fc96a8747cd27eac73596fb6">0.01 USDC wallet send to PortedVault</a></div>
   </section>
   <section class="card" id="tab-check" hidden>
-    <form id="f-check"><input id="i-check" placeholder="Contract address on Arc mainnet (0x…)" autocomplete="off" required pattern="0x[0-9a-fA-F]{40}"><button class="btn">Run preflight</button></form>
+    <form id="f-check"><input id="i-check" placeholder="Contract address on Arc mainnet (0x…)" autocomplete="off" required pattern="0x[0-9a-fA-F]{40}"><button class="btn">Run check</button></form>
     <div class="ex" id="ex-check">Try: <a data-fill="i-check" data-v="0x0970462cece33d425dba716cbf4855bb4f44fcf5">a live escrow</a></div>
   </section>
 
@@ -51,9 +51,9 @@ a{color:var(--acc)}footer{color:var(--mute);font-size:13px}
   <footer>Every result is a live simulation on Arc mainnet (no funds move) plus a scan of the deployed bytecode. Rules from Arc's <a href="https://docs.arc.io/arc/references/evm-differences" target="_blank" rel="noopener">EVM differences</a> and <a href="https://docs.arc.io/arc/tutorials/porting-contracts-to-arc" target="_blank" rel="noopener">porting guide</a>. CLI + AI-agent skill: <a href="https://github.com/" id="repo" target="_blank" rel="noopener">repo</a>.</footer>
 </main>
 <script type="module">
-import { ARC, client, checkContract, diagnoseTx } from "./engine/preflight.mjs";
+import { ARC, client, checkContract, diagnoseTx } from "./engine/lunua.mjs";
 const DEMO = { ported: "0xA8Bd8C8F580d5f00cEF41bfA524555de17E3B38F", fixed: "0x8f7349Dc451DFbC6B3773b49e33fa836b89C71f3",
-  failedTx: "0x44e05db307b73dded0a2bc78feb80cdc40393d50fc96a8747cd27eac73596fb6", registry: "0x966Bf58DB6F257C63Edb11bF006B5eB3160721DE", repo: "" };
+  failedTx: "0x44e05db307b73dded0a2bc78feb80cdc40393d50fc96a8747cd27eac73596fb6", registry: "0x966Bf58DB6F257C63Edb11bF006B5eB3160721DE", repo: "https://github.com/tomcode1000/lunua" };
 const rpc = client(ARC.mainnet.rpc);
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
