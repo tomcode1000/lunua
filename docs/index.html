@@ -96,6 +96,11 @@ $("#f-tx").onsubmit = (e) => { e.preventDefault(); busy(e.target, async () => {
   if (r.fix) $("#resend").onclick = () => resend(r);
 }); };
 
+// Shareable links: ?tx=<hash> or ?address=<contract> run immediately.
+const q = new URLSearchParams(location.search);
+if (q.get("address")) { document.querySelector('[data-tab="check"]').click(); $("#i-check").value = q.get("address"); $("#f-check").requestSubmit(); }
+else if (q.get("tx")) { $("#i-tx").value = q.get("tx"); $("#f-tx").requestSubmit(); }
+
 async function resend(r) {
   const s = $("#rs"), eth = window.ethereum;
   if (!eth) { s.textContent = "No browser wallet found. In your wallet, send the USDC token (0x3600…) instead of the native coin."; return; }
