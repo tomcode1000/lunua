@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arc Preflight</title>
+<meta name="description" content="Catch Arc's one-balance, two-door USDC bugs before launch, and explain failed payments in plain words.">
+<style>
+:root{--bg:#0b0d12;--card:#141821;--line:#232a36;--text:#e7ebf2;--mute:#8b95a7;--acc:#5b8cff;--ok:#2fbf71;--bad:#ff5c5c;--warn:#f2b33d}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#f6f7fb;--card:#fff;--line:#e3e7ef;--text:#121621;--mute:#5d677a;--acc:#2f62e6;--ok:#13965a;--bad:#d93b3b;--warn:#b57a00}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:28px;margin:0 0 4px}p.sub{color:var(--mute);margin:0 0 24px}
+.tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.tabs button{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer;font:inherit}
+.tabs button[aria-selected=true]{border-color:var(--acc);color:var(--acc)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+form{display:flex;gap:8px;flex-wrap:wrap}input{flex:1;min-width:0;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:12px;font:14px ui-monospace,Menlo,Consolas,monospace}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:10px;padding:12px 18px;font:inherit;font-weight:600;cursor:pointer}.btn[disabled]{opacity:.5;cursor:wait}
+.ex{color:var(--mute);font-size:13px;margin-top:8px}.ex a{color:var(--acc);cursor:pointer}
+.row{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)}.row:first-child{border-top:0}
+.tag{flex:none;font-weight:700;font-size:12px;border-radius:6px;padding:2px 8px;height:fit-content;min-width:52px;text-align:center}
+.pass{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}.fail{background:color-mix(in srgb,var(--bad) 18%,transparent);color:var(--bad)}
+.warn{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}.info{background:color-mix(in srgb,var(--acc) 18%,transparent);color:var(--acc)}
+.t{font-weight:600}.d{color:var(--mute);font-size:14px}.fix{font-size:14px;margin-top:4px}
+.verdict{font-size:18px;font-weight:700;margin-bottom:6px}.mono{font:13px ui-monospace,Menlo,Consolas,monospace;word-break:break-all;color:var(--mute)}
+a{color:var(--acc)}footer{color:var(--mute);font-size:13px}
+</style>
+</head>
+<body>
+<main>
+  <h1>Arc Preflight</h1>
+  <p class="sub">On Arc, USDC is one balance with two doors: native (18 decimals, what wallets use) and ERC-20 (6 decimals, <span class="mono">0x3600…</span>). Code copied from Ethereum treats them as two assets, and payments fail with no reason given. Check a contract before launch, or find out why a payment failed.</p>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="tx">Why did my payment fail?</button>
+    <button role="tab" aria-selected="false" data-tab="check">Check a contract</button>
+  </div>
+
+  <section class="card" id="tab-tx">
+    <form id="f-tx"><input id="i-tx" placeholder="Failed transaction hash (0x…)" autocomplete="off" required pattern="0x[0-9a-fA-F]{64}"><button class="btn">Explain</button></form>
+    <div class="ex">Try real ones: <a data-fill="i-tx" data-v="0xc2c6412823f3fbb5c6295aa5ddbaeaa779dc9fd1a0e20e6ef0a3920d671bb793">4 USDC wallet send to a live escrow (2 Oct 2026)</a> · <a data-fill="i-tx" data-v="0x44e05db307b73dded0a2bc78feb80cdc40393d50fc96a8747cd27eac73596fb6">0.01 USDC wallet send to PortedVault</a></div>
+  </section>
+  <section class="card" id="tab-check" hidden>
+    <form id="f-check"><input id="i-check" placeholder="Contract address on Arc mainnet (0x…)" autocomplete="off" required pattern="0x[0-9a-fA-F]{40}"><button class="btn">Run preflight</button></form>
+    <div class="ex" id="ex-check">Try: <a data-fill="i-check" data-v="0x0970462cece33d425dba716cbf4855bb4f44fcf5">a live escrow</a></div>
+  </section>
+
+  <div id="out"></div>
+
+  <footer>Every result is a live simulation on Arc mainnet (no funds move) plus a scan of the deployed bytecode. Rules from Arc's <a href="https://docs.arc.io/arc/references/evm-differences" target="_blank" rel="noopener">EVM differences</a> and <a href="https://docs.arc.io/arc/tutorials/porting-contracts-to-arc" target="_blank" rel="noopener">porting guide</a>. CLI + AI-agent skill: <a href="https://github.com/" id="repo" target="_blank" rel="noopener">repo</a>.</footer>
+</main>
+<script type="module">
+import { ARC, client, checkContract, diagnoseTx } from "./engine/preflight.mjs";
+const DEMO = { ported: "0xA8Bd8C8F580d5f00cEF41bfA524555de17E3B38F", fixed: "0x8f7349Dc451DFbC6B3773b49e33fa836b89C71f3",
+  failedTx: "0x44e05db307b73dded0a2bc78feb80cdc40393d50fc96a8747cd27eac73596fb6", registry: "0x966Bf58DB6F257C63Edb11bF006B5eB3160721DE", repo: "" };
+const rpc = client(ARC.mainnet.rpc);
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const out = $("#out");
+
+document.querySelectorAll("[data-tab]").forEach((b) => b.onclick = () => {
+  document.querySelectorAll("[data-tab]").forEach((x) => x.setAttribute("aria-selected", x === b));
+  $("#tab-tx").hidden = b.dataset.tab !== "tx"; $("#tab-check").hidden = b.dataset.tab !== "check"; out.innerHTML = "";
+});
+document.addEventListener("click", (e) => { const a = e.target.closest("[data-fill]"); if (a) { $("#" + a.dataset.fill).value = a.dataset.v; $("#" + a.dataset.fill).form.requestSubmit(); } });
+if (DEMO.ported) $("#ex-check").innerHTML += ` · <a data-fill="i-check" data-v="${DEMO.ported}">PortedVault (copied from Ethereum)</a> · <a data-fill="i-check" data-v="${DEMO.fixed}">ArcVault (fixed)</a>`;
+if (DEMO.repo) $("#repo").href = DEMO.repo;
+
+async function busy(form, fn) {
+  const btn = form.querySelector("button"); btn.disabled = true; out.innerHTML = `<div class="card d">Simulating on Arc mainnet…</div>`;
+  try { await fn(); } catch (e) { out.innerHTML = `<div class="card"><span class="tag fail">ERROR</span> ${esc(e.message)}</div>`; }
+  btn.disabled = false;
+}
+
+$("#f-check").onsubmit = (e) => { e.preventDefault(); busy(e.target, async () => {
+  const r = await checkContract($("#i-check").value.trim(), { rpc });
+  const fails = r.checks.filter((c) => c.status === "fail").length;
+  out.innerHTML = `<div class="card"><div class="verdict">${!r.isContract ? "Not a contract" : fails ? `❌ ${fails} blocking issue${fails > 1 ? "s" : ""}: do not launch yet` : "✅ No blocking issues"}</div>
+    <div class="mono">${esc(r.address)} · <a href="${ARC.mainnet.explorer}/address/${esc(r.address)}" target="_blank" rel="noopener">explorer</a></div></div>
+    <div class="card">${r.checks.map((c) => `<div class="row"><span class="tag ${c.status}">${c.status.toUpperCase()}</span><div>
+      <div class="t">${esc(c.title)}</div>${c.detail ? `<div class="d">${esc(c.detail)}</div>` : ""}
+      ${c.fix && c.status !== "pass" ? `<div class="fix"><b>Fix:</b> ${esc(c.fix)}</div>` : ""}
+      ${c.docs && c.status !== "pass" ? `<div class="d"><a href="${c.docs}" target="_blank" rel="noopener">Arc docs</a></div>` : ""}</div></div>`).join("")}</div>`;
+}); };
+
+$("#f-tx").onsubmit = (e) => { e.preventDefault(); busy(e.target, async () => {
+  const r = await diagnoseTx($("#i-tx").value.trim(), { rpc });
+  if (!r.found) { out.innerHTML = `<div class="card">Transaction not found on Arc mainnet.</div>`; return; }
+  out.innerHTML = `<div class="card"><div class="verdict">${r.status === "failed" ? "❌ Payment failed" : r.status === "success" ? "✅ Payment succeeded" : "⏳ Pending"}</div>
+    <div class="mono">${esc(r.amount)} USDC · from ${esc(r.from)} → ${esc(r.to)} · <a href="${ARC.mainnet.explorer}/tx/${esc(r.hash)}" target="_blank" rel="noopener">explorer</a></div></div>
+    <div class="card"><div class="t">What happened</div><p>${esc(r.cause)}</p>
+    ${r.caution ? `<p class="d"><b>Before you resend:</b> ${esc(r.caution)}</p>` : ""}
+    ${r.fix ? `<div class="t">Fix</div><p>${esc(r.fix.label)}. ${r.fixVerified ? "We replayed this fix at the original block and it <b>succeeds</b>." : `${r.fix.steps.length} wallet confirmations. Step 2 depends on step 1, so it can't be pre-simulated.`}</p>
+      <button class="btn" id="resend">Resend correctly with my wallet</button><div class="d" id="rs"></div>` : ""}</div>`;
+  if (r.fix) $("#resend").onclick = () => resend(r);
+}); };
+
+async function resend(r) {
+  const s = $("#rs"), eth = window.ethereum;
+  if (!eth) { s.textContent = "No browser wallet found. In your wallet, send the USDC token (0x3600…) instead of the native coin."; return; }
+  try {
+    const [from] = await eth.request({ method: "eth_requestAccounts" });
+    if (from.toLowerCase() !== r.from.toLowerCase()) { s.textContent = `Connect the wallet that sent the original payment (${r.from}).`; return; }
+    try { await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x13b2" }] }); }
+    catch (err) { if (err.code === 4902) await eth.request({ method: "wallet_addEthereumChain", params: [{ chainId: "0x13b2", chainName: "Arc", rpcUrls: [ARC.mainnet.rpc], blockExplorerUrls: [ARC.mainnet.explorer], nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 } }] }); else throw err; }
+    const links = [];
+    for (const [i, st] of r.fix.steps.entries()) {
+      s.innerHTML = `${links.join(" · ")} Confirm step ${i + 1} of ${r.fix.steps.length} in your wallet: ${esc(st.label)}…`;
+      const hash = await eth.request({ method: "eth_sendTransaction", params: [{ from, to: st.to, data: st.data, value: "0x0" }] });
+      for (let k = 0; k < 20; k++) { const rc = await eth.request({ method: "eth_getTransactionReceipt", params: [hash] }); if (rc) { if (rc.status !== "0x1") throw new Error(`Step ${i + 1} failed: ${hash}`); break; } await new Promise((z) => setTimeout(z, 500)); }
+      links.push(`step ${i + 1} ✅ <a href="${ARC.mainnet.explorer}/tx/${hash}" target="_blank" rel="noopener">${hash.slice(0, 12)}…</a>`);
+    }
+    s.innerHTML = links.join(" · ") + " · Done.";
+  } catch (e) { s.textContent = e.message; }
+}
+</script>
+</body>
+</html>

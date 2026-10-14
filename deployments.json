@@ -1,0 +1,6 @@
+{ "chainId": 5042, "deployer": "0x5e73b0cad666881aacf8f99d64fdba251676b0df",
+  "registry": "0x966Bf58DB6F257C63Edb11bF006B5eB3160721DE",
+  "ported": "0xA8Bd8C8F580d5f00cEF41bfA524555de17E3B38F",
+  "fixed": "0x8f7349Dc451DFbC6B3773b49e33fa836b89C71f3",
+  "demoFailedTx": "0x44e05db307b73dded0a2bc78feb80cdc40393d50fc96a8747cd27eac73596fb6",
+  "demoOkTx": "0x5e89958bcee21ac7d68b3086412ec69b34d2f8eafbc5898c389850c8b0c680da" }

@@ -1,0 +1,18 @@
+{
+  "name": "arc-preflight",
+  "version": "0.1.0",
+  "description": "Catch Arc USDC two-door bugs before launch; explain failed payments.",
+  "scripts": {
+    "check": "node bin/arc-preflight.mjs check"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "solc": "^0.8.30"
+  },
+  "bin": {
+    "arc-preflight": "bin/arc-preflight.mjs"
+  },
+  "type": "module"
+}
