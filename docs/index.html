@@ -72,15 +72,15 @@
     </section>
 
     <section>
-      <div class="sec-h"><h3>Detectors</h3><span>v0.1 · 5 detectors + forensics</span></div>
+      <div class="sec-h"><h3>Detectors</h3><span>severity is assigned only from demonstrated impact · signals never block</span></div>
       <table class="grid-t">
-        <thead><tr><th>ID</th><th>Detector</th><th>Method</th><th>Severity</th></tr></thead>
+        <thead><tr><th>ID</th><th>Detector</th><th>Method</th><th>Evidence class</th></tr></thead>
         <tbody>
-          <tr><td class="id">LUN-01</td><td>Native receive rejected on a USDC-handling contract</td><td>Simulation · 1e18 wei, empty calldata</td><td><span class="sev high">High</span></td></tr>
-          <tr><td class="id">LUN-02</td><td>Native and ERC-20 views read together (double count)</td><td>Bytecode · BALANCE/SELFBALANCE ∧ 0x3600…</td><td><span class="sev med">Medium</span></td></tr>
-          <tr><td class="id">LUN-03</td><td>Sub-micro dust invisible to <code>balanceOf</code></td><td>Simulation · 5e11 wei</td><td><span class="sev low">Low</span></td></tr>
-          <tr><td class="id">LUN-04</td><td>SELFDESTRUCT transfers full USDC balance</td><td>Bytecode · opcode 0xff</td><td><span class="sev med">Medium</span></td></tr>
-          <tr><td class="id">LUN-05</td><td>Randomness from PREVRANDAO (constant 0 on Arc)</td><td>Bytecode · opcode 0x44</td><td><span class="sev high">High</span></td></tr>
+          <tr><td class="id">LUN-01</td><td>Native receive rejected on a USDC-handling contract</td><td>Simulation · 1e18 wei, empty calldata · counterfactual</td><td><span class="sev med">Demonstrated</span></td></tr>
+          <tr><td class="id">LUN-02</td><td>Native and ERC-20 views read together (double count)</td><td>Bytecode · BALANCE/SELFBALANCE ∧ 0x3600…</td><td><span class="sev unc">Signal</span></td></tr>
+          <tr><td class="id">LUN-03</td><td>Sub-micro dust invisible to <code>balanceOf</code></td><td>Simulation · 5e11 wei send + balanceOf probe + control</td><td><span class="sev low">Demonstrated</span></td></tr>
+          <tr><td class="id">LUN-04</td><td>SELFDESTRUCT transfers full USDC balance</td><td>Bytecode · opcode 0xff</td><td><span class="sev unc">Signal</span></td></tr>
+          <tr><td class="id">LUN-05</td><td>Randomness from PREVRANDAO (constant 0 on Arc)</td><td>Bytecode · 0x44 + live PREVRANDAO probe</td><td><span class="sev unc">Signal</span></td></tr>
           <tr><td class="id">LUN-TX</td><td>Failed-transaction root cause and correct-rail rebuild</td><td>Replay @ N−1 · counterfactual simulation</td><td><span class="sev info">Forensic</span></td></tr>
         </tbody>
       </table>
@@ -102,12 +102,16 @@
     <section class="cols">
       <div>
         <div class="sec-h"><h3>Deploy gate</h3><span>CLI · CI · AI agents</span></div>
-        <p class="p">The engine is a single dependency-free ES module. The CLI exits non-zero on any High finding, so it gates CI merges and AI-agent deploys. The Lunua agent skill makes a passing run a hard precondition before any Arc deploy.</p>
+        <p class="p">The engine is a single dependency-free ES module. The CLI exits non-zero on any demonstrated blocking finding and writes Foundry reproductions with <code>--repro</code>, so it gates CI merges and AI-agent deploys. The Lunua agent skill makes a passing run a hard precondition before any Arc deploy.</p>
 <pre>$ lunua check --code build/PortedVault.json
-<span class="h">HIGH</span>  LUN-01 native receive rejected
-<span class="m">MED </span>  LUN-02 two views read      pc 0x018b
-<span class="h">HIGH</span>  LUN-05 PREVRANDAO          pc 0x01b2
-<span class="h">2 blocking · exit 1</span></pre>
+<span class="h">BLOCK </span> LUN-01 [Medium] wallet deposits revert
+<span class="m">SIGNAL</span> LUN-02 [Unconfirmed] two views  pc 0x018b
+<span class="m">SIGNAL</span> LUN-05 [Unconfirmed] PREVRANDAO pc 0x01b2
+<span class="h">1 demonstrated blocking · exit 1</span>
+
+$ lunua check 0x… --repro test/   <span style="color:#7d828c"># writes LUN01.t.sol …</span>
+$ arc-forge test --network arc
+<span style="color:#3fb37a">6 tests passed, 0 failed</span></pre>
       </div>
       <div>
         <div class="sec-h"><h3>Attestation</h3><span>PreflightRegistry</span></div>
