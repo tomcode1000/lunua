@@ -4,191 +4,128 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lunua</title>
-<meta name="description" content="USDC on Arc has two doors. Lunua guards both: pre-deploy checks for Arc's native/ERC-20 USDC duality, failed-payment forensics, and a deploy gate for AI coding agents.">
+<meta name="description" content="Lunua: Arc mainnet scanner for native/ERC-20 USDC duality defects. Pre-deploy detectors, failed-transaction forensics, and a deploy gate for AI coding agents.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23121826'/%3E%3Cpath d='M9 24V12a7 7 0 0 1 14 0v12' fill='none' stroke='%237aa2ff' stroke-width='2.5'/%3E%3Cpath d='M16 9v15' stroke='%2334d399' stroke-width='2.5'/%3E%3C/svg%3E">
-<style>
-:root{
-  --bg:#07090e;--bg2:#0c1018;--card:#10151f;--card2:#151b28;--line:#1f2736;--line2:#2a3446;
-  --text:#e8edf6;--mute:#8a94a8;--dim:#5d677b;
-  --native:#7aa2ff;--erc:#34d399;--acc:#7aa2ff;--bad:#ff6b6b;--warn:#f5b84a;--ok:#34d399;
-  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;--sans:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-  --glow:radial-gradient(60% 50% at 50% 0%,rgba(122,162,255,.16),transparent 70%);
-}
-@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
-  --bg:#f7f8fb;--bg2:#eef1f7;--card:#ffffff;--card2:#f4f6fb;--line:#e1e6ef;--line2:#cfd6e3;
-  --text:#0e1320;--mute:#556078;--dim:#7d879a;--native:#2f5fe0;--erc:#0f9a6a;--acc:#2f5fe0;--bad:#d63c3c;--warn:#b07400;--ok:#0f9a6a;
-  --glow:radial-gradient(60% 50% at 50% 0%,rgba(47,95,224,.10),transparent 70%)}}
-:root[data-theme="dark"]{--bg:#07090e}
-*{box-sizing:border-box}html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
-a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
-code,.mono{font-family:var(--mono);font-size:.86em}
-.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
-/* nav */
-nav{position:sticky;top:0;z-index:10;backdrop-filter:blur(10px);background:color-mix(in srgb,var(--bg) 80%,transparent);border-bottom:1px solid var(--line)}
-nav .wrap{display:flex;align-items:center;gap:24px;height:60px}
-.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.02em;color:var(--text);font-size:18px}
-.brand svg{width:26px;height:26px}
-nav .links{display:flex;gap:20px;margin-left:auto;font-size:14px}nav .links a{color:var(--mute)}nav .links a:hover{color:var(--text);text-decoration:none}
-.gh{border:1px solid var(--line2);border-radius:8px;padding:6px 12px;color:var(--text)!important}
-@media (max-width:760px){nav .links a:not(.gh){display:none}}
-/* hero */
-.hero{background:var(--glow);padding:72px 0 40px;border-bottom:1px solid var(--line)}
-.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
-@media (max-width:900px){.hero .wrap{grid-template-columns:1fr}}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;font:500 12px var(--mono);color:var(--mute);border:1px solid var(--line2);border-radius:999px;padding:5px 12px;margin-bottom:22px}
-.eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
-h1{font-size:clamp(34px,5.2vw,58px);line-height:1.04;letter-spacing:-.035em;margin:0 0 20px;font-weight:800}
-h1 .n{color:var(--native)}h1 .e{color:var(--erc)}
-.lede{font-size:18px;color:var(--mute);max-width:560px;margin:0 0 28px}
-.cta{display:flex;gap:12px;flex-wrap:wrap}
-.btn{display:inline-flex;align-items:center;gap:8px;background:var(--acc);color:#fff;border:0;border-radius:10px;padding:12px 18px;font:600 15px var(--sans);cursor:pointer;text-decoration:none!important}
-.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line2)}
-.btn[disabled]{opacity:.55;cursor:progress}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:36px;max-width:560px}
-.stat{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:12px 14px}
-.stat b{display:block;font:700 22px var(--mono);letter-spacing:-.02em}.stat span{font-size:12.5px;color:var(--mute)}
-/* diagram */
-.diagram{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
-.diagram svg{width:100%;height:auto;display:block}
-.diagram .cap{font-size:13px;color:var(--mute);margin-top:6px;text-align:center}
-/* sections */
-section{padding:72px 0;border-bottom:1px solid var(--line)}
-.kicker{font:600 12px var(--mono);color:var(--acc);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
-h2{font-size:clamp(26px,3.4vw,38px);letter-spacing:-.03em;line-height:1.1;margin:0 0 14px}
-.sub{color:var(--mute);max-width:720px;margin:0 0 32px}
-/* console */
-.console{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
-.console .bar{display:flex;gap:6px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--card2)}
-.console .bar i{width:10px;height:10px;border-radius:50%;background:var(--line2)}
-.tabs{display:flex;gap:4px;margin-left:12px;flex-wrap:wrap}
-.tabs button{background:transparent;border:1px solid transparent;color:var(--mute);border-radius:8px;padding:6px 12px;font:500 13px var(--sans);cursor:pointer}
-.tabs button[aria-selected=true]{background:var(--bg);border-color:var(--line2);color:var(--text)}
-.console .body{padding:20px}
-form{display:flex;gap:10px;flex-wrap:wrap}
-input{flex:1;min-width:0;background:var(--bg);color:var(--text);border:1px solid var(--line2);border-radius:10px;padding:13px 14px;font:14px var(--mono);outline:none}
-input:focus{border-color:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 22%,transparent)}
-.ex{color:var(--dim);font-size:13px;margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.chip{font:500 12px var(--mono);border:1px solid var(--line2);border-radius:999px;padding:3px 10px;color:var(--mute);cursor:pointer;background:transparent}
-.chip:hover{color:var(--text);border-color:var(--acc)}
-#out:empty{display:none}#out{border-top:1px solid var(--line);padding:20px}
-.verdict{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:700;margin-bottom:4px}
-.meta{font:12.5px var(--mono);color:var(--dim);word-break:break-all;margin-bottom:16px}
-.row{display:grid;grid-template-columns:64px 1fr;gap:14px;padding:14px 0;border-top:1px solid var(--line)}
-.tag{font:700 11px var(--mono);border-radius:6px;padding:3px 0;text-align:center;height:fit-content;letter-spacing:.04em}
-.pass{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}.fail{background:color-mix(in srgb,var(--bad) 15%,transparent);color:var(--bad)}
-.warn{background:color-mix(in srgb,var(--warn) 15%,transparent);color:var(--warn)}.info{background:color-mix(in srgb,var(--acc) 15%,transparent);color:var(--acc)}
-.t{font-weight:600}.d{color:var(--mute);font-size:14px}.fix{font-size:14px;margin-top:6px}
-.callout{border:1px solid var(--line);background:var(--bg2);border-radius:12px;padding:14px 16px;margin:12px 0;font-size:15px}
-.callout.w{border-color:color-mix(in srgb,var(--warn) 40%,var(--line))}
-.steps{font:12.5px var(--mono);color:var(--mute);margin:8px 0 14px;padding-left:18px}
-.spin{width:14px;height:14px;border:2px solid var(--line2);border-top-color:var(--acc);border-radius:50%;animation:s .8s linear infinite;display:inline-block}
-@keyframes s{to{transform:rotate(360deg)}}
-/* evidence */
-table{width:100%;border-collapse:collapse;font-size:14.5px}
-th{text-align:left;font:600 12px var(--mono);color:var(--dim);text-transform:uppercase;letter-spacing:.06em;padding:0 12px 10px}
-td{padding:14px 12px;border-top:1px solid var(--line);vertical-align:top}
-td:first-child{font-weight:600;white-space:nowrap}
-.tbl{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 8px 4px;overflow-x:auto}
-/* grid cards */
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
-.card h3{margin:0 0 6px;font-size:16px;letter-spacing:-.01em}.card p{margin:0;color:var(--mute);font-size:14.5px}
-.card .ic{font:600 12px var(--mono);color:var(--acc);margin-bottom:12px;display:block}
-.card ul{margin:10px 0 0;padding-left:18px;color:var(--mute);font-size:14px}
-pre{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:16px;overflow-x:auto;font:13px/1.65 var(--mono);color:var(--text);margin:0}
-pre .c{color:var(--dim)}pre .g{color:var(--ok)}pre .r{color:var(--bad)}pre .y{color:var(--warn)}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
-@media (max-width:860px){.two{grid-template-columns:1fr}}
-.addr{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line);flex-wrap:wrap}
-.addr:first-child{border-top:0}.addr a{font:13px var(--mono);word-break:break-all}
-footer{padding:36px 0 56px;color:var(--dim);font-size:13.5px}
-footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
-
-.beta{font:500 11px var(--mono);color:var(--mute);border:1px solid var(--line2);border-radius:6px;padding:2px 7px;margin-left:4px;letter-spacing:0}
-.net{display:inline-flex;align-items:center;gap:7px;font:500 12px var(--mono);color:var(--mute)}.net i{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
-nav .links{align-items:center}
-.scan{background:var(--glow);min-height:calc(100vh - 140px);padding:64px 0 40px}
-.scan .wrap{max-width:880px}
-.scan h1{font-size:clamp(30px,4.6vw,46px);text-align:center;margin-bottom:10px}
-.scan .lede{text-align:center;margin:0 auto 28px;font-size:16.5px}
-.search{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line2);border-radius:14px;padding:8px 8px 8px 16px;box-shadow:0 10px 40px rgba(0,0,0,.18)}
-.search:focus-within{border-color:var(--acc);box-shadow:0 0 0 4px color-mix(in srgb,var(--acc) 18%,transparent)}
-.search svg{width:20px;height:20px;color:var(--dim);flex:none}
-.search input{border:0;background:transparent;padding:10px 4px;box-shadow:none!important;font-size:15px}
-.kind{font:600 11px var(--mono);color:var(--acc);white-space:nowrap}
-.scan .ex{justify-content:center;margin-top:14px}
-#out{border:0;padding:0;margin-top:28px}
-.report{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
-.rhead{display:flex;gap:18px;align-items:center;padding:20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.score{width:74px;height:74px;border-radius:50%;display:grid;place-items:center;font:800 15px var(--mono);flex:none;border:5px solid}
-.score.s-fail{border-color:var(--bad);color:var(--bad)}.score.s-warn{border-color:var(--warn);color:var(--warn)}.score.s-pass{border-color:var(--ok);color:var(--ok)}.score.s-info{border-color:var(--acc);color:var(--acc)}
-.rhead .verdict{margin:0}.rhead .meta{margin:4px 0 0}
-.counts{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}.counts span{font:600 11.5px var(--mono);border-radius:6px;padding:3px 8px}
-.rbody{padding:4px 20px 16px}
-.rbody .row:first-child{border-top:0}
-.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-top:44px}
-.ck{border:1px solid var(--line);background:color-mix(in srgb,var(--card) 70%,transparent);border-radius:12px;padding:12px 14px}
-.ck b{display:block;font:600 13px var(--mono);margin-bottom:2px}.ck span{font-size:13px;color:var(--mute)}
-#out:not(:empty) ~ .checks{display:none}
-
-html,body{overflow-x:hidden}
-.meta,.rbody,.verdict{overflow-wrap:anywhere}
-@media (max-width:620px){
-  .net,.beta,.kind{display:none}
-  .scan{padding:36px 0 24px}
-  .search{padding:6px 6px 6px 12px}.search svg{display:none}.search input{font-size:13px}
-  .btn{padding:10px 14px}
-  .rhead{gap:12px;padding:16px}.score{width:58px;height:58px;font-size:12px;border-width:4px}
-  .rbody{padding:4px 16px 14px}.row{grid-template-columns:52px 1fr;gap:10px}
-  .verdict{font-size:16.5px}
-}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230b0c0e'/%3E%3Cpath d='M8 26V13a8 8 0 0 1 16 0v13' fill='none' stroke='%23e8e9ec' stroke-width='2.4'/%3E%3Cpath d='M16 7v19' stroke='%23ff5a36' stroke-width='2.4'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="./style.css">
 </head>
 <body>
-<nav><div class="wrap">
-  <a class="brand" href="./"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#121826"/><path d="M9 24V12a7 7 0 0 1 14 0v12" fill="none" stroke="#7aa2ff" stroke-width="2.5"/><path d="M16 9v15" stroke="#34d399" stroke-width="2.5"/></svg>Lunua <span class="beta">Arc scanner</span></a>
-  <div class="links"><span class="net"><i></i>Arc mainnet · 5042</span><a class="gh" href="https://github.com/tomcode1000/lunua" target="_blank" rel="noopener">GitHub</a></div>
-</div></nav>
+<div class="strip"><div class="wrap">
+  <span><i class="live"></i>ARC MAINNET</span><span>CHAIN 5042</span><span>BLOCK <b id="blk">…</b></span><span class="hide-s">FINALITY &lt;1s</span><span class="hide-s">RPC rpc.mainnet.arc.io</span>
+  <span class="r"><a href="https://github.com/tomcode1000/lunua" target="_blank" rel="noopener">SOURCE</a><a href="https://github.com/tomcode1000/lunua/tree/main/skill/lunua" target="_blank" rel="noopener">AGENT SKILL</a></span>
+</div></div>
 
-<main class="scan">
-  <div class="wrap">
-    <h1>Arc USDC scanner</h1>
-    <p class="lede">Paste a <b>contract address</b> to scan it for Arc's native / ERC-20 USDC traps, or a <b>transaction hash</b> to find out why a payment failed.</p>
-    <form id="f-scan" class="search">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-4-4" stroke="currentColor" stroke-width="2"/></svg>
-      <input id="i-scan" placeholder="0x… address or transaction hash" autocomplete="off" spellcheck="false" required pattern="0x([0-9a-fA-F]{40}|[0-9a-fA-F]{64})">
-      <span class="kind" id="kind"></span>
-      <button class="btn">Scan</button>
-    </form>
-    <div class="ex">Try:
-      <button class="chip" data-v="0xA8Bd8C8F580d5f00cEF41bfA524555de17E3B38F">PortedVault</button>
-      <button class="chip" data-v="0x8f7349Dc451DFbC6B3773b49e33fa836b89C71f3">ArcVault</button>
-      <button class="chip" data-v="0x0970462cece33d425dba716cbf4855bb4f44fcf5">Live escrow</button>
-      <button class="chip" data-v="0xc2c6412823f3fbb5c6295aa5ddbaeaa779dc9fd1a0e20e6ef0a3920d671bb793">Failed 4 USDC tx</button>
-      <button class="chip" data-v="0x44e05db307b73dded0a2bc78feb80cdc40393d50fc96a8747cd27eac73596fb6">Failed 0.01 USDC tx</button>
-    </div>
+<header class="top"><div class="wrap">
+  <a class="mark" href="./" aria-label="Lunua home">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 27V13a9 9 0 0 1 18 0v14" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M16 5v22" stroke="var(--sig)" stroke-width="2.2"/></svg>
+    <span>LUNUA</span>
+  </a>
+  <div class="tagline">Duality analysis for USDC on Arc</div>
+</div></header>
 
-    <div id="out" aria-live="polite"></div>
+<main class="wrap">
+  <form id="f-scan" class="query" autocomplete="off">
+    <label for="i-scan">Target</label>
+    <input id="i-scan" spellcheck="false" placeholder="Contract address (0x…40) or transaction hash (0x…64)" required pattern="0x([0-9a-fA-F]{40}|[0-9a-fA-F]{64})">
+    <span class="mode" id="kind">—</span>
+    <button type="submit">Analyse</button>
+  </form>
+  <div class="samples"><span>Samples</span>
+    <button data-v="0xA8Bd8C8F580d5f00cEF41bfA524555de17E3B38F">PortedVault</button>
+    <button data-v="0x8f7349Dc451DFbC6B3773b49e33fa836b89C71f3">ArcVault</button>
+    <button data-v="0x0970462cece33d425dba716cbf4855bb4f44fcf5">Escrow (live)</button>
+    <button data-v="0xc2c6412823f3fbb5c6295aa5ddbaeaa779dc9fd1a0e20e6ef0a3920d671bb793">tx 0xc2c6…b793</button>
+    <button data-v="0x44e05db307b73dded0a2bc78feb80cdc40393d50fc96a8747cd27eac73596fb6">tx 0x44e0…6fb6</button>
+  </div>
 
-    <div class="checks" id="checks">
-      <div class="ck"><b>Native receive</b><span>Simulates a wallet "Send USDC" (1 USDC native) via eth_call state override</span></div>
-      <div class="ck"><b>Double count</b><span>Bytecode reads BALANCE/SELFBALANCE and 0x3600… together</span></div>
-      <div class="ck"><b>Dust</b><span>Sub-micro native value invisible to balanceOf</span></div>
-      <div class="ck"><b>PREVRANDAO</b><span>Always 0 on Arc: broken randomness</span></div>
-      <div class="ck"><b>SELFDESTRUCT</b><span>Moves the contract's entire USDC balance</span></div>
-      <div class="ck"><b>Tx forensics</b><span>Replay at block N−1, classify, rebuild on the ERC-20 rail</span></div>
-    </div>
+  <div id="out" aria-live="polite"></div>
+
+  <div id="idle">
+    <section class="model">
+      <div class="m-text">
+        <h2>One balance. Two interfaces.</h2>
+        <p>Arc's native gas asset <b>is</b> USDC. The same account balance is exposed as native value at 18 decimals and through the ERC-20 predeploy at <code>0x3600…0000</code> at 6 decimals. Contracts written against Ethereum semantics assume two assets. On Arc that assumption produces silent reverts, double-counted balances and broken invariants.</p>
+        <p>Lunua detects these defects from deployed or undeployed bytecode using live <code>eth_call</code> simulation with state overrides, and reconstructs failed transactions at their original block.</p>
+      </div>
+      <figure class="m-fig" aria-label="Diagram: native and ERC-20 interfaces resolve to one balance">
+        <svg viewBox="0 0 420 210" role="img">
+          <g font-family="IBM Plex Mono" font-size="10.5" fill="currentColor">
+            <rect x="1" y="1" width="150" height="74" fill="none" stroke="currentColor" stroke-opacity=".35"/>
+            <text x="12" y="22" font-weight="600" fill="var(--native)">NATIVE</text>
+            <text x="12" y="40" fill-opacity=".7">decimals    18</text>
+            <text x="12" y="55" fill-opacity=".7">msg.value · BALANCE</text>
+            <text x="12" y="69" fill-opacity=".7">wallet send</text>
+            <rect x="269" y="1" width="150" height="74" fill="none" stroke="currentColor" stroke-opacity=".35"/>
+            <text x="280" y="22" font-weight="600" fill="var(--erc)">ERC-20 0x3600…</text>
+            <text x="280" y="40" fill-opacity=".7">decimals    6</text>
+            <text x="280" y="55" fill-opacity=".7">transfer · approve</text>
+            <text x="280" y="69" fill-opacity=".7">balanceOf (truncates)</text>
+            <path d="M76 76v40h134v20M344 76v40H210" fill="none" stroke="currentColor" stroke-opacity=".45"/>
+            <rect x="130" y="136" width="160" height="44" fill="currentColor" fill-opacity=".06" stroke="currentColor"/>
+            <text x="210" y="155" text-anchor="middle" font-weight="600">ACCOUNT BALANCE</text>
+            <text x="210" y="170" text-anchor="middle" fill-opacity=".6">single state slot · ×10¹²</text>
+            <text x="210" y="204" text-anchor="middle" fill="var(--sig)">ported code: opens one door · counts both</text>
+          </g>
+        </svg>
+      </figure>
+    </section>
+
+    <section>
+      <div class="sec-h"><h3>Detectors</h3><span>v0.1 · 5 detectors + forensics</span></div>
+      <table class="grid-t">
+        <thead><tr><th>ID</th><th>Detector</th><th>Method</th><th>Severity</th></tr></thead>
+        <tbody>
+          <tr><td class="id">LUN-01</td><td>Native receive rejected on a USDC-handling contract</td><td>Simulation · 1e18 wei, empty calldata</td><td><span class="sev high">High</span></td></tr>
+          <tr><td class="id">LUN-02</td><td>Native and ERC-20 views read together (double count)</td><td>Bytecode · BALANCE/SELFBALANCE ∧ 0x3600…</td><td><span class="sev med">Medium</span></td></tr>
+          <tr><td class="id">LUN-03</td><td>Sub-micro dust invisible to <code>balanceOf</code></td><td>Simulation · 5e11 wei</td><td><span class="sev low">Low</span></td></tr>
+          <tr><td class="id">LUN-04</td><td>SELFDESTRUCT transfers full USDC balance</td><td>Bytecode · opcode 0xff</td><td><span class="sev med">Medium</span></td></tr>
+          <tr><td class="id">LUN-05</td><td>Randomness from PREVRANDAO (constant 0 on Arc)</td><td>Bytecode · opcode 0x44</td><td><span class="sev high">High</span></td></tr>
+          <tr><td class="id">LUN-TX</td><td>Failed-transaction root cause and correct-rail rebuild</td><td>Replay @ N−1 · counterfactual simulation</td><td><span class="sev info">Forensic</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <div class="sec-h"><h3>Observed on mainnet</h3><span>public incidents, Sep–Oct 2026</span></div>
+      <table class="grid-t">
+        <thead><tr><th>Project</th><th>Defect</th><th>Effect</th><th>Ref</th></tr></thead>
+        <tbody>
+          <tr><td>Breadchain / KambioX</td><td>LUN-01 · escrow without <code>receive()</code></td><td>4 USDC wallet send reverted; issue open</td><td><a href="https://github.com/BreadchainCoop/curacao-crypto-onramp-bot/issues/48" target="_blank" rel="noopener">#48</a> <button class="lnk" data-v="0xc2c6412823f3fbb5c6295aa5ddbaeaa779dc9fd1a0e20e6ef0a3920d671bb793">replay</button></td></tr>
+          <tr><td>DefiLlama</td><td>LUN-02 · native + ERC-20 summed</td><td>Arc TVL ≈ $10.5M reported vs ≈ $6.3M</td><td><a href="https://github.com/DefiLlama/DefiLlama-Adapters/pull/21274" target="_blank" rel="noopener">#21274</a> <a href="https://github.com/DefiLlama/DefiLlama-Adapters/pull/21279" target="_blank" rel="noopener">#21279</a></td></tr>
+          <tr><td>Circle arc-node docs</td><td>6-dp amount passed as native value</td><td>Sent 1e-12 USDC instead of 1</td><td><a href="https://github.com/circlefin/arc-node/issues/453" target="_blank" rel="noopener">#453</a></td></tr>
+          <tr><td>Layerswap · Pinax</td><td>Decimals / dual Transfer logs</td><td>Integration patches</td><td><a href="https://github.com/layerswap/layerswapapp/pull/2175" target="_blank" rel="noopener">#2175</a> <a href="https://github.com/pinax-network/substreams-evm-extended/issues/130" target="_blank" rel="noopener">#130</a></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="cols">
+      <div>
+        <div class="sec-h"><h3>Deploy gate</h3><span>CLI · CI · AI agents</span></div>
+        <p class="p">The engine is a single dependency-free ES module. The CLI exits non-zero on any High finding, so it gates CI merges and AI-agent deploys. The Lunua agent skill makes a passing run a hard precondition before any Arc deploy.</p>
+<pre>$ lunua check --code build/PortedVault.json
+<span class="h">HIGH</span>  LUN-01 native receive rejected
+<span class="m">MED </span>  LUN-02 two views read      pc 0x018b
+<span class="h">HIGH</span>  LUN-05 PREVRANDAO          pc 0x01b2
+<span class="h">2 blocking · exit 1</span></pre>
+      </div>
+      <div>
+        <div class="sec-h"><h3>Attestation</h3><span>PreflightRegistry</span></div>
+        <p class="p">Results are written on-chain as fail/warn bitmasks keyed by attester and target, pinned to <code>extcodehash</code>. An attestation is invalidated automatically if the code at the address changes. Wallets can call <code>status(attester, target)</code> before a send.</p>
+        <dl class="kv">
+          <dt>Registry</dt><dd><a href="https://explorer.arc.io/address/0x966Bf58DB6F257C63Edb11bF006B5eB3160721DE" target="_blank" rel="noopener">0x966Bf58DB6F257C63Edb11bF006B5eB3160721DE</a></dd>
+          <dt>PortedVault</dt><dd><a href="https://explorer.arc.io/address/0xA8Bd8C8F580d5f00cEF41bfA524555de17E3B38F" target="_blank" rel="noopener">0xA8Bd8C8F580d5f00cEF41bfA524555de17E3B38F</a> · fail 33 · warn 4</dd>
+          <dt>ArcVault</dt><dd><a href="https://explorer.arc.io/address/0x8f7349Dc451DFbC6B3773b49e33fa836b89C71f3" target="_blank" rel="noopener">0x8f7349Dc451DFbC6B3773b49e33fa836b89C71f3</a> · pass</dd>
+        </dl>
+      </div>
+    </section>
   </div>
 </main>
 
-<footer><div class="wrap">
-  <span>Live simulation on Arc mainnet · no funds move · results attestable to <a href="https://explorer.arc.io/address/0x966Bf58DB6F257C63Edb11bF006B5eB3160721DE" target="_blank" rel="noopener">PreflightRegistry</a></span>
-  <span>CLI · agent skill · CI gate: <a href="https://github.com/tomcode1000/lunua" target="_blank" rel="noopener">github.com/tomcode1000/lunua</a></span>
-</div></footer>
-
+<footer class="wrap">
+  <span>Lunua · detectors derived from Arc <a href="https://docs.arc.io/arc/references/evm-differences" target="_blank" rel="noopener">EVM differences</a> and the <a href="https://docs.arc.io/arc/tutorials/porting-contracts-to-arc" target="_blank" rel="noopener">porting guide</a></span>
+  <span>Scope: documented Arc duality defects. Not a general security audit. MIT.</span>
+</footer>
 <script type="module" src="./app.mjs"></script>
 </body>
 </html>

@@ -63,7 +63,9 @@ export function scanBytecode(code) {
     const metaLen = parseInt(b.slice(-4), 16);
     if (metaLen + 2 < end) end -= metaLen + 2;
   }
-  const found = { SELFDESTRUCT: false, PREVRANDAO: false, BALANCE: false, SELFBALANCE: false, CALLVALUE: false, pushesUSDC: false };
+  const found = { SELFDESTRUCT: false, PREVRANDAO: false, BALANCE: false, SELFBALANCE: false, CALLVALUE: false, pushesUSDC: false,
+    pc: { SELFDESTRUCT: [], PREVRANDAO: [], BALANCE: [], SELFBALANCE: [], USDC: [] }, analysedBytes: end };
+  const mark = (k, pc) => { if (found.pc[k].length < 4) found.pc[k].push(pc); };
   // solc emits 0x3600..00 as PUSH20, or optimized as PUSH a, PUSH b, SHL (a << b).
   const USDC_N = BigInt(USDC);
   const last = []; // last two pushed values, reset by any other opcode
@@ -72,18 +74,18 @@ export function scanBytecode(code) {
     if (op >= 0x60 && op <= 0x7f) {
       const n = op - 0x5f;
       const v = BigInt("0x" + (b.slice(i * 2 + 2, i * 2 + 2 + n * 2) || "0"));
-      if (v === USDC_N) found.pushesUSDC = true;
+      if (v === USDC_N) { found.pushesUSDC = true; mark("USDC", i); }
       last.push(v); if (last.length > 2) last.shift();
       i += n;
       continue;
     }
     // SHL pops shift (top = last pushed) then value: PUSH value, PUSH shift, SHL.
-    if (op === 0x1b && last.length === 2 && last[1] < 256n && ((last[0] << last[1]) & ((1n << 256n) - 1n)) === USDC_N) found.pushesUSDC = true;
+    if (op === 0x1b && last.length === 2 && last[1] < 256n && ((last[0] << last[1]) & ((1n << 256n) - 1n)) === USDC_N) { found.pushesUSDC = true; mark("USDC", i); }
     last.length = 0;
-    if (op === 0xff) found.SELFDESTRUCT = true;
-    else if (op === 0x44) found.PREVRANDAO = true;
-    else if (op === 0x31) found.BALANCE = true;
-    else if (op === 0x47) found.SELFBALANCE = true;
+    if (op === 0xff) { found.SELFDESTRUCT = true; mark("SELFDESTRUCT", i); }
+    else if (op === 0x44) { found.PREVRANDAO = true; mark("PREVRANDAO", i); }
+    else if (op === 0x31) { found.BALANCE = true; mark("BALANCE", i); }
+    else if (op === 0x47) { found.SELFBALANCE = true; mark("SELFBALANCE", i); }
     else if (op === 0x34) found.CALLVALUE = true;
   }
   return found;
@@ -103,6 +105,9 @@ export async function checkContract(address, { rpc = client(), code: codeOverrid
   }
   const checks = [];
   const scan = scanBytecode(code);
+  const block = parseInt(await rpc("eth_blockNumber", []), 16);
+  const at = (k) => scan.pc[k].map((pc) => "0x" + pc.toString(16).padStart(4, "0")).join(", ");
+  const simEv = (label, r) => `eth_call ${label} @ block ${block} (state override: probe balance${codeOverride ? " + candidate code" : ""}) → ${r.ok ? "success" : "revert" + (r.reason && r.reason !== "execution reverted" ? ` "${r.reason}"` : " (empty returndata)")}`;
 
   // 1. Plain wallet "Send USDC" (native, empty calldata) - the Breadchain case.
   const native = await simulate(rpc, { from: PROBE_FROM, to: address, value: hex(10n ** 18n), data: "0x" }, "latest", true, extra);
@@ -148,7 +153,16 @@ export async function checkContract(address, { rpc = client(), code: codeOverrid
         fix: "Use a VRF / randomness oracle instead.", docs: PORT }
     : { id: "prevrandao", status: "pass", title: "No block.prevrandao randomness", detail: "", fix: null, docs: PORT });
 
-  return { address, isContract: true, codeSize: (code.length - 2) / 2, checks };
+  const ev = {
+    "native-receive": [simEv(`{to: target, value: 1e18 (1 USDC), data: 0x}`, native), simEv(`{to: 0x3600…, data: transfer(target, 1e6)}`, erc20)],
+    "dust": [`eth_call {to: target, value: 5e11 (0.0000005 USDC)} @ block ${block} → success`],
+    "two-views": [scan.BALANCE || scan.SELFBALANCE ? `BALANCE/SELFBALANCE at pc ${[at("BALANCE"), at("SELFBALANCE")].filter(Boolean).join(", ")}` : "no BALANCE/SELFBALANCE opcode",
+      scan.pushesUSDC ? `USDC 0x3600…0000 materialised at pc ${at("USDC")}` : "USDC address not referenced"],
+    "selfdestruct": [scan.SELFDESTRUCT ? `SELFDESTRUCT (0xff) at pc ${at("SELFDESTRUCT")}` : `no 0xff opcode in ${scan.analysedBytes} bytes of executable code`],
+    "prevrandao": [scan.PREVRANDAO ? `PREVRANDAO (0x44) at pc ${at("PREVRANDAO")}` : `no 0x44 opcode in ${scan.analysedBytes} bytes of executable code`],
+  };
+  for (const c of checks) c.evidence = ev[c.id] || [];
+  return { address, isContract: true, codeSize: (code.length - 2) / 2, analysedBytes: scan.analysedBytes, block, predeploy: !!codeOverride, checks };
 }
 
 // Explain a failed transaction in plain words and, where possible, build a fixed one.
@@ -158,7 +172,8 @@ export async function diagnoseTx(hash, { rpc = client() } = {}) {
   const rc = await rpc("eth_getTransactionReceipt", [hash]);
   const value = BigInt(tx.value || 0);
   const out = { found: true, hash, from: tx.from, to: tx.to, value18: value.toString(), amount: fmtUsdc(value / SCALE),
-    status: rc ? (rc.status === "0x1" ? "success" : "failed") : "pending", block: tx.blockNumber };
+    status: rc ? (rc.status === "0x1" ? "success" : "failed") : "pending", block: tx.blockNumber,
+    gasUsed: rc ? parseInt(rc.gasUsed, 16) : null, input: tx.input, evidence: [] };
   if (out.status !== "failed") { out.cause = out.status === "success" ? "This transaction succeeded." : "Still pending."; return out; }
 
   const prev = hex(BigInt(tx.blockNumber) - 1n);
@@ -172,14 +187,19 @@ export async function diagnoseTx(hash, { rpc = client() } = {}) {
   const isContract = code && code !== "0x";
   const replay = await simulate(rpc, { from: tx.from, to: tx.to, value: tx.value, data: tx.input }, prev, false);
   out.revertReason = replay.reason || null;
+  const pb = parseInt(prev, 16);
+  out.evidence.push(`target ${isContract ? `is a contract (${(code.length - 2) / 2} bytes at block ${parseInt(tx.blockNumber, 16)})` : "is an EOA"}`);
+  out.evidence.push(`replay eth_call {from, to, value: ${value} wei, data: ${(tx.input || "0x").slice(0, 10)}${(tx.input || "0x").length > 10 ? "…" : ""}} @ block ${pb} → ${replay.ok ? "success (state-dependent failure)" : "revert" + (replay.reason && replay.reason !== "execution reverted" ? ` "${replay.reason}"` : " (empty returndata)")}`);
 
   if (isContract && value > 0n && (tx.input === "0x" || !tx.input)) {
     const alt = await simulate(rpc, { from: tx.from, to: USDC, data: transferData(tx.to, value / SCALE) }, prev, false);
+    out.evidence.push(`counterfactual eth_call {to: 0x3600…, data: transfer(target, ${value / SCALE})} @ block ${pb} → ${alt.ok ? "success" : "revert"}`);
     out.kind = "native-to-erc20-only-contract";
     out.cause = `Your wallet sent ${out.amount} USDC the native way (like sending gas money). The contract you sent it to only accepts USDC through the token interface (0x3600…), so it rejected the payment. Your ${out.amount} USDC never left your wallet; you only paid gas.`;
     // Does the target track deposits through a function (e.g. deposit(uint256) = 0xb6b55f25)?
     // Then a plain transfer would deliver the USDC without crediting the sender.
     const hasDeposit = code.toLowerCase().includes("63b6b55f25");
+    out.evidence.push(hasDeposit ? "dispatcher contains selector 0xb6b55f25 deposit(uint256): deposits are credited by function, not by balance" : "no deposit(uint256) selector in dispatcher");
     const amt6 = value / SCALE;
     out.caution = hasDeposit
       ? "This contract records deposits through its own deposit() function, so a plain token transfer would deliver the USDC but NOT credit it to you. The fix below uses the token interface in two steps: approve, then deposit."
