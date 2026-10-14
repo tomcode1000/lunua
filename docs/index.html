@@ -133,6 +133,18 @@ nav .links{align-items:center}
 .ck{border:1px solid var(--line);background:color-mix(in srgb,var(--card) 70%,transparent);border-radius:12px;padding:12px 14px}
 .ck b{display:block;font:600 13px var(--mono);margin-bottom:2px}.ck span{font-size:13px;color:var(--mute)}
 #out:not(:empty) ~ .checks{display:none}
+
+html,body{overflow-x:hidden}
+.meta,.rbody,.verdict{overflow-wrap:anywhere}
+@media (max-width:620px){
+  .net,.beta,.kind{display:none}
+  .scan{padding:36px 0 24px}
+  .search{padding:6px 6px 6px 12px}.search svg{display:none}.search input{font-size:13px}
+  .btn{padding:10px 14px}
+  .rhead{gap:12px;padding:16px}.score{width:58px;height:58px;font-size:12px;border-width:4px}
+  .rbody{padding:4px 16px 14px}.row{grid-template-columns:52px 1fr;gap:10px}
+  .verdict{font-size:16.5px}
+}
 </style>
 </head>
 <body>
