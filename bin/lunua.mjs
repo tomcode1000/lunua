@@ -29,7 +29,14 @@ if (cmd === "check" && target) {
   let code = null, addr = target;
   if (target === "--code") {
     const src = argv[2];
-    code = src.startsWith("0x") ? src : JSON.parse(readFileSync(src, "utf8")).deployed;
+    if (src.startsWith("0x")) code = src;
+    else {
+      // Accepts Foundry (out/X.sol/X.json), Hardhat (artifacts/.../X.json) and Lunua build artifacts.
+      const a = JSON.parse(readFileSync(src, "utf8"));
+      code = a.deployedBytecode?.object ?? (typeof a.deployedBytecode === "string" ? a.deployedBytecode : null) ?? a.deployed;
+      if (!code) { console.error(`No runtime bytecode found in ${src} (looked for deployedBytecode.object, deployedBytecode, deployed).`); process.exit(2); }
+      if (!code.startsWith("0x")) code = "0x" + code;
+    }
     addr = null;
   }
   const r = await checkContract(addr, { rpc, code });

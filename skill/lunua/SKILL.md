@@ -16,11 +16,12 @@ Code written for Ethereum assumes these are two different assets. That assumptio
 **Before ANY deploy to Arc (mainnet or testnet) you MUST run:**
 
 ```bash
-npx lunua check --code out/<Contract>.sol/<Contract>.json   # before deploying
-npx lunua check <deployed-address>                          # after deploying
+npx -y github:tomcode1000/lunua check --code out/<Contract>.sol/<Contract>.json   # before deploying (Foundry or Hardhat artifact)
+npx -y github:tomcode1000/lunua check <deployed-address>   # after deploying
+npx -y github:tomcode1000/lunua check <address> --repro test/lunua   # write Foundry reproductions
 ```
 
-- Exit code `1` = at least one FAIL. **Do not deploy.** Fix the code, rebuild, run again.
+- Exit code `1` = at least one demonstrated blocking finding. **Do not deploy.** Findings marked SIGNAL / Unconfirmed do not block, but report them to the user. Fix the code, rebuild, run again.
 - Only deploy when the command exits `0`. Show the user the report.
 - Never skip, silence or work around the gate. If you cannot run it, tell the user and stop.
 
@@ -41,7 +42,7 @@ npx lunua check <deployed-address>                          # after deploying
 
 ## When a user says "my USDC payment on Arc failed"
 
-Run `npx lunua tx <hash>`. It replays the transaction at its block, explains the cause in plain words and, for the common case (native send to an ERC-20-only contract), prints a corrected ERC-20 transaction that it has already simulated as succeeding. Offer that fix; never resend on the user's behalf without their confirmation.
+Run `npx -y github:tomcode1000/lunua tx <hash>`. It replays the transaction at its block, explains the cause in plain words and, for the common case (native send to an ERC-20-only contract), prints a corrected ERC-20 transaction that it has already simulated as succeeding. Offer that fix; never resend on the user's behalf without their confirmation.
 
 ## Sources
 - Arc EVM differences: https://docs.arc.io/arc/references/evm-differences

@@ -23,7 +23,7 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 var(
 a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--rule2); text-underline-offset: 3px; }
 a:hover { text-decoration-color: var(--sig); }
 code { font: 500 .88em var(--mono); color: var(--ink2); }
-.wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+.wrap { max-width: 1560px; margin: 0 auto; padding: 0 clamp(16px, 3vw, 48px); }
 @media (max-width: 640px) { .wrap { padding: 0 16px; } .hide-s { display: none; } }
 
 /* status strip */

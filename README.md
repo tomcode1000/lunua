@@ -57,13 +57,15 @@ It then builds the corrected transaction using the token interface: a `transfer`
 
 ### 2. "Check my contract" (for builders), before OR after deploy
 ```
-$ lunua check --code build/PortedVault.json      # undeployed bytecode
-$ lunua check 0xA8Bd8C8F580d5f00cEF41bfA524555de17E3B38F
-❌ FAIL  Wallet "Send USDC" will FAIL
-⚠️ WARN  Reads BOTH the native balance and USDC 0x3600… (double-count risk)
-✅ PASS  No SELFDESTRUCT
-❌ FAIL  Uses block.prevrandao: it is ALWAYS 0 on Arc
-❌ 2 blocking issue(s). Do not launch yet.          (exit code 1)
+$ npx -y github:tomcode1000/lunua check --code out/PortedVault.sol/PortedVault.json
+BLOCK   LUN-01  [Medium] Wallet-initiated USDC deposits revert
+         actual: revert, empty returndata. The same amount through transfer() on 0x3600… succeeds.
+SIGNAL  LUN-02  [Unconfirmed] Native balance and ERC-20 USDC read in the same contract
+         actual: BALANCE/SELFBALANCE at pc 0x018b; 0x3600… at pc 0x00d6, 0x0138, …
+SIGNAL  LUN-05  [Unconfirmed] Reads block.prevrandao, which is constant on Arc
+         actual: probe returns 0x00…00: PREVRANDAO is constant 0 on Arc mainnet
+PASS    LUN-04  No SELFDESTRUCT
+1 demonstrated blocking finding(s). Do not deploy.                  (exit code 1)
 ```
 
 | Check | How |
@@ -96,11 +98,12 @@ Demo transactions (the same 0.01 USDC wallet-style native send):
 - to PortedVault: **reverted** [`0x44e0…6fb6`](https://explorer.arc.io/tx/0x44e05db307b73dded0a2bc78feb80cdc40393d50fc96a8747cd27eac73596fb6)
 - to ArcVault: **succeeded** [`0x5e89…80da`](https://explorer.arc.io/tx/0x5e89958bcee21ac7d68b3086412ec69b34d2f8eafbc5898c389850c8b0c680da)
 
-Registry: PortedVault recorded as failing (mask 33 = native-receive + prevrandao, warn 4 = two-views); ArcVault recorded as passing.
+Registry attestations (written at deploy time, before the demonstrated-impact policy): PortedVault failMask 33 / warnMask 4, ArcVault pass. Under the current policy PortedVault has 1 demonstrated blocking finding (LUN-01) and 2 unconfirmed signals.
 
 ## Run it
 
 ```bash
+npx -y github:tomcode1000/lunua tx <hash>          # failed-payment forensics (no install)
 node bin/lunua.mjs tx <hash>              # explain a failed payment
 node bin/lunua.mjs check <address>        # check a deployed contract
 node bin/lunua.mjs check --code <file.json|0xruntimehex>   # before deploying

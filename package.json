@@ -1,18 +1,30 @@
 {
   "name": "lunua",
   "version": "0.1.0",
-  "description": "Catch Arc USDC two-door bugs before launch; explain failed payments.",
+  "description": "Duality analysis for USDC on Arc: pre-deploy detectors, failed-tx forensics, deploy gate for AI agents.",
   "scripts": {
     "check": "node bin/lunua.mjs check"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "solc": "^0.8.30"
-  },
   "bin": {
     "lunua": "bin/lunua.mjs"
   },
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "solc": "^0.8.30"
+  },
+  "files": [
+    "bin",
+    "engine",
+    "skill",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": "github:tomcode1000/lunua",
+  "homepage": "https://lunua.vercel.app"
 }
