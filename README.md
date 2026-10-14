@@ -117,8 +117,23 @@ Contracts: `contracts/src/`. Build with `node scripts/compile.cjs` (solc 0.8.30)
 - The checker covers the documented Arc traps listed above. It does not prove a contract is safe in general.
 - The two-step approve + deposit fix can't be pre-simulated in one `eth_call`, because step 2 depends on step 1. The single-transfer fix is simulated at the original block.
 
-## Next
-GitHub Action wrapper · a watcher that runs Lunua on every new Arc contract and posts results to the registry · wallet integration ("this contract rejects native sends: send via token?") · source-level checks (msg.value vs 6-dp amounts).
+
+
+## Where Lunua goes next
+
+Lunua today is a scanner. The direction is **the safety layer for USDC payments on Arc**: checks before code ships, and before a user signs. Each phase reuses the same engine.
+
+| Phase | What ships | How we know it worked |
+|---|---|---|
+| **Now: live** | Scanner, transaction forensics, CLI deploy gate, AI-agent skill, PreflightRegistry on mainnet | Live on Arc mainnet; Foundry reproductions pass on a fork |
+| **Next: in the pipeline** | GitHub Action (one line in CI); Arc Studio and agent integration; outreach to teams already affected (e.g. Breadchain #48) | External teams running Lunua in CI |
+| **Then: across the chain** | Watcher that analyses every new Arc contract and writes results to the registry; public dashboard | Share of new contracts analysed; explorers and wallets reading `status()` |
+| **Then: at the wallet** | Wallet guard (MetaMask Snap transaction insight): simulates a send before signing and offers the ERC-20 rail | Failed native sends prevented for end users |
+| **Ongoing: with Arc** | New detectors as Arc adds features: opt-in privacy, Memo / Multicall3From sender attribution, EURC and StableFX flows, blocklist handling | Coverage of Arc's documented EVM differences |
+
+**Sustainability:** the public scanner, registry and wallet guard stay free. Teams pay for private-repo CI, private reports and pre-audit screening. Lunua is a natural candidate for the Circle Grant Program after the microgrant.
+
+**What a microgrant funds:** RPC capacity for the chain-wide watcher, gas for registry attestations, and hosting.
 
 ## Sources
 [Arc EVM differences](https://docs.arc.io/arc/references/evm-differences) · [Porting contracts to Arc](https://docs.arc.io/arc/tutorials/porting-contracts-to-arc) · [Stablecoin native model](https://docs.arc.io/arc/concepts/stablecoin-native-model) · [Circle skills](https://github.com/circlefin/skills)
