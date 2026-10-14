@@ -175,3 +175,5 @@ footer a { color: var(--ink2); }
 .hint { font-size: 13px; color: var(--mute) !important; margin: 0 0 8px !important; }
 
 main.wrap { padding-bottom: 72px; }
+
+.sub-h { font: 600 12px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--mute); margin: 22px 0 10px; }

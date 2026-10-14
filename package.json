@@ -1,7 +1,7 @@
 {
   "name": "lunua",
   "version": "0.1.0",
-  "description": "Duality analysis for USDC on Arc: pre-deploy detectors, failed-tx forensics, deploy gate for AI agents.",
+  "description": "The safety layer for USDC payments on Arc: pre-deploy detection, failed-payment forensics, deploy gate for CI and AI agents.",
   "scripts": {
     "check": "node bin/lunua.mjs check"
   },

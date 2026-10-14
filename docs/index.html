@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lunua</title>
-<meta name="description" content="Lunua: Arc mainnet scanner for native/ERC-20 USDC duality defects. Pre-deploy detectors, failed-transaction forensics, and a deploy gate for AI coding agents.">
+<meta name="description" content="Lunua is the safety layer for USDC payments on Arc. Today: pre-deploy detection of native/ERC-20 USDC defects, failed-payment forensics, and a deploy gate for CI and AI agents, live on mainnet.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230b0c0e'/%3E%3Cpath d='M8 26V13a8 8 0 0 1 16 0v13' fill='none' stroke='%23e8e9ec' stroke-width='2.4'/%3E%3Cpath d='M16 7v19' stroke='%23ff5a36' stroke-width='2.4'/%3E%3C/svg%3E">
@@ -21,7 +21,7 @@
     <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 27V13a9 9 0 0 1 18 0v14" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M16 5v22" stroke="var(--sig)" stroke-width="2.2"/></svg>
     <span>LUNUA</span>
   </a>
-  <div class="tagline">Duality analysis for USDC on Arc</div>
+  <div class="tagline">The safety layer for USDC payments on Arc</div>
 </div></header>
 
 <main class="wrap">
@@ -44,7 +44,9 @@
   <div id="idle">
     <section class="model">
       <div class="m-text">
-        <h2>One balance. Two interfaces.</h2>
+        <h2>The safety layer for USDC payments on Arc.</h2>
+        <p class="p" style="margin-top:0"><b>Today:</b> pre-deploy detection, failed-payment forensics and a deploy gate for CI and AI agents, live on mainnet. <b>Next:</b> chain-wide attestation and a wallet guard that checks a payment before it is signed.</p>
+        <h3 class="sub-h">One balance. Two interfaces.</h3>
         <p>Arc's native gas asset <b>is</b> USDC. The same account balance is exposed as native value at 18 decimals and through the ERC-20 predeploy at <code>0x3600…0000</code> at 6 decimals. Contracts written against Ethereum semantics assume two assets. On Arc that assumption produces silent reverts, double-counted balances and broken invariants.</p>
         <p>Lunua detects these defects from deployed or undeployed bytecode using live <code>eth_call</code> simulation with state overrides, and reconstructs failed transactions at their original block.</p>
       </div>
@@ -100,7 +102,7 @@
     </section>
 
     <section>
-      <div class="sec-h"><h3>Roadmap</h3><span>one engine · the safety layer for USDC payments on Arc</span></div>
+      <div class="sec-h"><h3>Roadmap</h3><span>one engine, from deploy time to signing time</span></div>
       <table class="grid-t">
         <thead><tr><th>Phase</th><th>What ships</th><th>Signal of success</th></tr></thead>
         <tbody>

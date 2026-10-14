@@ -1,6 +1,8 @@
 # Lunua
 
-**USDC on Arc has two doors. Lunua guards both.**
+**The safety layer for USDC payments on Arc.**
+
+Today: pre-deploy detection of Arc's native/ERC-20 USDC defects, failed-payment forensics, and a deploy gate for CI and AI agents, live on mainnet. Next: chain-wide attestation and a wallet guard that checks a payment before it is signed ([roadmap](#where-lunua-goes-next)).
 
 **Live scanner: https://lunua.vercel.app** · e.g. [a real mainnet failure](https://lunua.vercel.app/?tx=0xc2c6412823f3fbb5c6295aa5ddbaeaa779dc9fd1a0e20e6ef0a3920d671bb793) · [a blocked contract](https://lunua.vercel.app/?address=0xA8Bd8C8F580d5f00cEF41bfA524555de17E3B38F)
 
@@ -121,7 +123,7 @@ Contracts: `contracts/src/`. Build with `node scripts/compile.cjs` (solc 0.8.30)
 
 ## Where Lunua goes next
 
-Lunua today is a scanner. The direction is **the safety layer for USDC payments on Arc**: checks before code ships, and before a user signs. Each phase reuses the same engine.
+Lunua is one engine applied at every point a USDC payment can go wrong on Arc: when code is written, when it ships, across the chain, and at the moment a user signs. Each phase reuses the same engine.
 
 | Phase | What ships | How we know it worked |
 |---|---|---|
