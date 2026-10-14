@@ -148,5 +148,5 @@ pre .h { color: #ff4d4f; } pre .m { color: #ff9f1a; }
 .loading::before { content: ""; display: inline-block; width: 8px; height: 8px; background: var(--sig); margin-right: 10px; animation: pulse .8s infinite; }
 .err { padding: 18px; font: 13px var(--mono); color: var(--high); }
 
-footer { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-top: 28px; padding-bottom: 40px; margin-top: 64px; border-top: 1px solid var(--rule); font: 11.5px var(--mono); color: var(--mute); }
+footer { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-top: 28px; padding-bottom: 40px; margin: 64px auto 0; border-top: 1px solid var(--rule); font: 11.5px var(--mono); color: var(--mute); }
 footer a { color: var(--ink2); }
