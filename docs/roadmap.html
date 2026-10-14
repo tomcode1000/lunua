@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lunua Roadmap</title>
+<meta name="description" content="Lunua roadmap: one engine applied at every point a USDC payment can fail on Arc, from deploy time to signing time.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230b0c0e'/%3E%3Cpath d='M8 26V13a8 8 0 0 1 16 0v13' fill='none' stroke='%23e8e9ec' stroke-width='2.4'/%3E%3Cpath d='M16 7v19' stroke='%23ff5a36' stroke-width='2.4'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="./style.css">
+<style>
+.rm-hero { padding: 48px 0 8px; max-width: 860px; }
+.rm-hero h1 { font: 600 34px/1.12 var(--sans); letter-spacing: -.02em; margin: 0 0 14px; }
+.rm-hero p { color: var(--ink2); margin: 0 0 10px; font-size: 16px; }
+.stage { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--rule); margin: 36px 0 8px; background: var(--bg1); }
+.stage div { padding: 14px 16px; border-right: 1px solid var(--rule); }
+.stage div:last-child { border-right: 0; }
+.stage b { display: block; font: 600 11px var(--mono); letter-spacing: .12em; text-transform: uppercase; margin-bottom: 4px; }
+.stage span { font-size: 13px; color: var(--mute); }
+.stage .on b { color: var(--pass); }
+@media (max-width: 760px) { .stage { grid-template-columns: 1fr 1fr; } .stage div:nth-child(2) { border-right: 0; } .stage div:nth-child(-n+2) { border-bottom: 1px solid var(--rule); } }
+.rail { position: relative; margin-top: 40px; padding-left: 36px; }
+.rail::before { content: ""; position: absolute; left: 9px; top: 6px; bottom: 6px; width: 1px; background: var(--rule2); }
+.ph { position: relative; padding-bottom: 36px; }
+.ph::before { content: ""; position: absolute; left: -32px; top: 4px; width: 11px; height: 11px; border: 1.5px solid var(--ink2); background: var(--bg); }
+.ph.live::before { background: var(--pass); border-color: var(--pass); }
+.ph-h { display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap; margin-bottom: 12px; }
+.ph-h .tag { font: 600 11px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--mute); }
+.ph.live .ph-h .tag { color: var(--pass); }
+.ph-h h2 { font: 600 21px var(--sans); letter-spacing: -.01em; margin: 0; }
+.ph-b { display: grid; grid-template-columns: 1.15fr .85fr; border: 1px solid var(--rule); background: var(--bg1); }
+@media (max-width: 860px) { .ph-b { grid-template-columns: 1fr; } }
+.ph-b > div { padding: 16px 18px; }
+.ph-b > div + div { border-left: 1px solid var(--rule); }
+@media (max-width: 860px) { .ph-b > div + div { border-left: 0; border-top: 1px solid var(--rule); } }
+.ph-b h4 { margin: 0 0 6px; font: 600 10.5px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--mute); }
+.ph-b p, .ph-b li { color: var(--ink2); font-size: 14.5px; }
+.ph-b p { margin: 0 0 12px; }
+.ph-b ul { margin: 0 0 12px; padding-left: 18px; }
+.ph-b li { margin-bottom: 4px; }
+.ph-b .sig { font: 13px var(--mono); color: var(--ink); }
+.cols3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid var(--rule); background: var(--bg1); margin-top: 14px; }
+.cols3 > div { padding: 16px 18px; border-right: 1px solid var(--rule); }
+.cols3 > div:last-child { border-right: 0; }
+@media (max-width: 860px) { .cols3 { grid-template-columns: 1fr; } .cols3 > div { border-right: 0; border-bottom: 1px solid var(--rule); } }
+.cols3 h4 { margin: 0 0 6px; font: 600 10.5px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--mute); }
+.cols3 p { margin: 0; color: var(--ink2); font-size: 14.5px; }
+.navl { color: var(--ink2); font: 500 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; text-decoration: none; }
+.navl:hover { color: var(--ink); }
+.navl.on { color: var(--ink); border-bottom: 1px solid var(--sig); padding-bottom: 2px; }
+</style>
+</head>
+<body>
+<div class="strip"><div class="wrap">
+  <span><i class="live"></i>ARC MAINNET</span><span>CHAIN 5042</span><span class="hide-s">FINALITY &lt;1s</span>
+  <span class="r"><a href="https://github.com/tomcode1000/lunua" target="_blank" rel="noopener">SOURCE</a><a href="https://github.com/tomcode1000/lunua/tree/main/skill/lunua" target="_blank" rel="noopener">AGENT SKILL</a></span>
+</div></div>
+
+<header class="top"><div class="wrap">
+  <a class="mark" href="./" aria-label="Lunua home">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 27V13a9 9 0 0 1 18 0v14" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M16 5v22" stroke="var(--sig)" stroke-width="2.2"/></svg>
+    <span>LUNUA</span>
+  </a>
+  <nav style="display:flex;gap:22px;align-items:center"><a class="navl" href="./">Scanner</a><a class="navl on" href="./roadmap">Roadmap</a></nav>
+</div></header>
+
+<main class="wrap">
+  <div class="rm-hero">
+    <h1>The safety layer for USDC payments on Arc.</h1>
+    <p>A USDC payment on Arc can fail at four points: when the contract is written, when it ships, while it runs on the chain, and when a user signs. Lunua is one engine applied at each of them. The first two are live today.</p>
+    <p>The engine stays the same throughout: <code>eth_call</code> simulation with state overrides, bytecode analysis, replay at block N−1, impact-based severity and reproducible proofs.</p>
+  </div>
+
+  <div class="stage">
+    <div class="on"><b>● Write</b><span>AI-agent skill · CLI</span></div>
+    <div class="on"><b>● Ship</b><span>Deploy gate · scanner · forensics</span></div>
+    <div><b>○ Run</b><span>Chain-wide attestation</span></div>
+    <div><b>○ Sign</b><span>Wallet guard</span></div>
+  </div>
+
+  <div class="rail">
+    <div class="ph live">
+      <div class="ph-h"><span class="tag">Phase 1 · Live</span><h2>Detect, explain and gate</h2></div>
+      <div class="ph-b">
+        <div>
+          <h4>Shipped</h4>
+          <ul>
+            <li>Scanner for deployed or undeployed bytecode (detectors LUN-01 to LUN-05)</li>
+            <li>Failed-transaction forensics: replay, counterfactual on the ERC-20 rail, signable fix</li>
+            <li>CLI deploy gate (exit 1 on demonstrated blocking findings) and Foundry reproductions</li>
+            <li>AI-agent skill that makes a passing check a precondition for any Arc deploy</li>
+            <li>PreflightRegistry on Arc mainnet, attestations pinned to <code>extcodehash</code></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Evidence</h4>
+          <p>Live at lunua.vercel.app. Generated reproductions pass on an Arc mainnet fork (<code>arc-forge test --network arc</code>). It correctly explains a real mainnet failure (Breadchain, 2 Oct).</p>
+          <h4>Signal of success</h4>
+          <p class="sig">Teams using it before launch</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ph">
+      <div class="ph-h"><span class="tag">Phase 2 · Pipeline</span><h2>Wherever Arc contracts are built</h2></div>
+      <div class="ph-b">
+        <div>
+          <h4>What ships</h4>
+          <ul>
+            <li>GitHub Action: one line in CI, fails the job on a demonstrated blocking finding, posts the report on the PR</li>
+            <li>Integration with Arc Studio and coding agents so generated contracts are checked before deployment</li>
+            <li>Direct outreach to teams already affected (e.g. Breadchain issue #48)</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Why it matters</h4>
+          <p>Most new Arc contracts will be written with AI assistance. Models learned Ethereum semantics, so the defect is the default.</p>
+          <h4>Signal of success</h4>
+          <p class="sig">External repos gating CI on Lunua</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ph">
+      <div class="ph-h"><span class="tag">Phase 3 · Chain</span><h2>Every new contract, attested</h2></div>
+      <div class="ph-b">
+        <div>
+          <h4>What ships</h4>
+          <ul>
+            <li>A watcher that analyses each contract deployed on Arc and writes the result to PreflightRegistry</li>
+            <li>Public dashboard of findings across the ecosystem</li>
+            <li>A <code>status(attester, target)</code> integration path for explorers, indexers and wallets</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Why it matters</h4>
+          <p>It turns a per-team tool into a public good: any app can check a counterparty contract before routing USDC to it.</p>
+          <h4>Signal of success</h4>
+          <p class="sig">Share of new contracts analysed · registry readers</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ph">
+      <div class="ph-h"><span class="tag">Phase 4 · Wallet</span><h2>Checked before the user signs</h2></div>
+      <div class="ph-b">
+        <div>
+          <h4>What ships</h4>
+          <ul>
+            <li>Wallet guard as a MetaMask Snap (transaction insight): simulates the pending send with the same engine</li>
+            <li>When a native send would revert, it offers the ERC-20 rail (<code>transfer</code> or <code>approve → deposit</code>) in one step</li>
+            <li>Registry lookup shown inline: known-bad contracts flagged before signing</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Why it matters</h4>
+          <p>This is where users feel the failure today: a bare "Failed" and lost gas. Fixing it at signing time protects people who never read a report.</p>
+          <h4>Signal of success</h4>
+          <p class="sig">Failed native sends prevented</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ph">
+      <div class="ph-h"><span class="tag">Ongoing</span><h2>Detectors that grow with Arc</h2></div>
+      <div class="ph-b">
+        <div>
+          <h4>Next detector surfaces</h4>
+          <ul>
+            <li>Arc Privacy Sector (opt-in confidential execution)</li>
+            <li>Memo and Multicall3From sender attribution</li>
+            <li>EURC and StableFX settlement flows</li>
+            <li>Blocklist-revert handling and the 20 gwei fee floor</li>
+            <li>Source-level checks: <code>msg.value</code> against 6-dp amounts</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Principle</h4>
+          <p>Each documented Arc difference becomes a detector with a live proof. Severity is assigned only from demonstrated impact.</p>
+          <h4>Signal of success</h4>
+          <p class="sig">Coverage of Arc's documented EVM differences</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="sec-h"><h3>Sustainability</h3><span>free where it protects users</span></div>
+    <div class="cols3">
+      <div><h4>Free</h4><p>Public scanner, transaction forensics, the registry and the wallet guard.</p></div>
+      <div><h4>Paid</h4><p>Private-repo CI, private reports, and pre-audit screening for audit firms.</p></div>
+      <div><h4>Grants</h4><p>The microgrant funds RPC capacity for the chain-wide watcher, gas for registry attestations and hosting. The Circle Grant Program is the next step.</p></div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <span>Lunua · <a href="./">scanner</a> · <a href="https://github.com/tomcode1000/lunua" target="_blank" rel="noopener">source</a></span>
+  <span>Phases are ordered by dependency, not dated.</span>
+</footer>
+</body>
+</html>

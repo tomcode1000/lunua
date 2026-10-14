@@ -177,3 +177,7 @@ footer a { color: var(--ink2); }
 main.wrap { padding-bottom: 72px; }
 
 .sub-h { font: 600 12px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--mute); margin: 22px 0 10px; }
+
+.navl { color: var(--ink2); font: 500 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; text-decoration: none; }
+.navl:hover { color: var(--ink); }
+.navl.on { color: var(--ink); border-bottom: 1px solid var(--sig); padding-bottom: 2px; }

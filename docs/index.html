@@ -13,7 +13,7 @@
 <body>
 <div class="strip"><div class="wrap">
   <span><i class="live"></i>ARC MAINNET</span><span>CHAIN 5042</span><span>BLOCK <b id="blk">…</b></span><span class="hide-s">FINALITY &lt;1s</span><span class="hide-s">RPC rpc.mainnet.arc.io</span>
-  <span class="r"><a href="https://github.com/tomcode1000/lunua" target="_blank" rel="noopener">SOURCE</a><a href="https://github.com/tomcode1000/lunua/tree/main/skill/lunua" target="_blank" rel="noopener">AGENT SKILL</a></span>
+  <span class="r"><a href="./roadmap">ROADMAP</a><a href="https://github.com/tomcode1000/lunua" target="_blank" rel="noopener">SOURCE</a><a href="https://github.com/tomcode1000/lunua/tree/main/skill/lunua" target="_blank" rel="noopener">AGENT SKILL</a></span>
 </div></div>
 
 <header class="top"><div class="wrap">
@@ -21,7 +21,7 @@
     <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 27V13a9 9 0 0 1 18 0v14" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M16 5v22" stroke="var(--sig)" stroke-width="2.2"/></svg>
     <span>LUNUA</span>
   </a>
-  <div class="tagline">The safety layer for USDC payments on Arc</div>
+  <nav style="display:flex;gap:22px;align-items:center"><span class="tagline">The safety layer for USDC payments on Arc</span><a class="navl on" href="./">Scanner</a><a class="navl" href="./roadmap">Roadmap</a></nav>
 </div></header>
 
 <main class="wrap">
@@ -45,7 +45,7 @@
     <section class="model">
       <div class="m-text">
         <h2>The safety layer for USDC payments on Arc.</h2>
-        <p class="p" style="margin-top:0"><b>Today:</b> pre-deploy detection, failed-payment forensics and a deploy gate for CI and AI agents, live on mainnet. <b>Next:</b> chain-wide attestation and a wallet guard that checks a payment before it is signed.</p>
+        <p class="p" style="margin-top:0"><b>Today:</b> pre-deploy detection, failed-payment forensics and a deploy gate for CI and AI agents, live on mainnet. <b>Next:</b> chain-wide attestation and a wallet guard that checks a payment before it is signed. <a href="./roadmap">Roadmap →</a></p>
         <h3 class="sub-h">One balance. Two interfaces.</h3>
         <p>Arc's native gas asset <b>is</b> USDC. The same account balance is exposed as native value at 18 decimals and through the ERC-20 predeploy at <code>0x3600…0000</code> at 6 decimals. Contracts written against Ethereum semantics assume two assets. On Arc that assumption produces silent reverts, double-counted balances and broken invariants.</p>
         <p>Lunua detects these defects from deployed or undeployed bytecode using live <code>eth_call</code> simulation with state overrides, and reconstructs failed transactions at their original block.</p>
@@ -97,20 +97,6 @@
           <tr><td>DefiLlama</td><td>LUN-02 · native + ERC-20 summed</td><td>Arc TVL ≈ $10.5M reported vs ≈ $6.3M</td><td><a href="https://github.com/DefiLlama/DefiLlama-Adapters/pull/21274" target="_blank" rel="noopener">#21274</a> <a href="https://github.com/DefiLlama/DefiLlama-Adapters/pull/21279" target="_blank" rel="noopener">#21279</a></td></tr>
           <tr><td>Circle arc-node docs</td><td>6-dp amount passed as native value</td><td>Sent 1e-12 USDC instead of 1</td><td><a href="https://github.com/circlefin/arc-node/issues/453" target="_blank" rel="noopener">#453</a></td></tr>
           <tr><td>Layerswap · Pinax</td><td>Decimals / dual Transfer logs</td><td>Integration patches</td><td><a href="https://github.com/layerswap/layerswapapp/pull/2175" target="_blank" rel="noopener">#2175</a> <a href="https://github.com/pinax-network/substreams-evm-extended/issues/130" target="_blank" rel="noopener">#130</a></td></tr>
-        </tbody>
-      </table>
-    </section>
-
-    <section>
-      <div class="sec-h"><h3>Roadmap</h3><span>one engine, from deploy time to signing time</span></div>
-      <table class="grid-t">
-        <thead><tr><th>Phase</th><th>What ships</th><th>Signal of success</th></tr></thead>
-        <tbody>
-          <tr><td class="id">LIVE</td><td>Scanner · transaction forensics · CLI deploy gate · AI-agent skill · PreflightRegistry on mainnet</td><td>Foundry reproductions pass on an Arc fork</td></tr>
-          <tr><td class="id">PIPELINE</td><td>GitHub Action · Arc Studio / agent integration · outreach to affected teams</td><td>External teams gating CI on Lunua</td></tr>
-          <tr><td class="id">CHAIN</td><td>Watcher analysing every new Arc contract, attesting to the registry · public dashboard</td><td>Explorers and wallets reading <code>status()</code></td></tr>
-          <tr><td class="id">WALLET</td><td>Wallet guard: simulate before signing, offer the ERC-20 rail (MetaMask Snap)</td><td>Failed native sends prevented for users</td></tr>
-          <tr><td class="id">ONGOING</td><td>Detectors for new Arc surfaces: opt-in privacy · Memo / Multicall3From · EURC &amp; StableFX · blocklist</td><td>Coverage of Arc's documented EVM differences</td></tr>
         </tbody>
       </table>
     </section>

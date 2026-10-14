@@ -2,7 +2,7 @@
 
 **The safety layer for USDC payments on Arc.**
 
-Today: pre-deploy detection of Arc's native/ERC-20 USDC defects, failed-payment forensics, and a deploy gate for CI and AI agents, live on mainnet. Next: chain-wide attestation and a wallet guard that checks a payment before it is signed ([roadmap](#where-lunua-goes-next)).
+Today: pre-deploy detection of Arc's native/ERC-20 USDC defects, failed-payment forensics, and a deploy gate for CI and AI agents, live on mainnet. Next: chain-wide attestation and a wallet guard that checks a payment before it is signed ([roadmap](https://lunua.vercel.app/roadmap)).
 
 **Live scanner: https://lunua.vercel.app** · e.g. [a real mainnet failure](https://lunua.vercel.app/?tx=0xc2c6412823f3fbb5c6295aa5ddbaeaa779dc9fd1a0e20e6ef0a3920d671bb793) · [a blocked contract](https://lunua.vercel.app/?address=0xA8Bd8C8F580d5f00cEF41bfA524555de17E3B38F)
 
