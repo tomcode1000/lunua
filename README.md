@@ -2,6 +2,8 @@
 
 **USDC on Arc has two doors. Lunua guards both.**
 
+**Live scanner: https://lunua.vercel.app** · e.g. [a real mainnet failure](https://lunua.vercel.app/?tx=0xc2c6412823f3fbb5c6295aa5ddbaeaa779dc9fd1a0e20e6ef0a3920d671bb793) · [a blocked contract](https://lunua.vercel.app/?address=0xA8Bd8C8F580d5f00cEF41bfA524555de17E3B38F)
+
 **Catch Arc's "one balance, two doors" USDC bugs before launch, and tell users in plain words why their payment failed.**
 
 On Arc, USDC is a single balance you can reach through two doors:
@@ -23,6 +25,20 @@ Contracts copied from Ethereum treat these as two assets. The wallet shows a bar
 | Layerswap, Pinax | Code changes to support native decimals | [layerswap #2175](https://github.com/layerswap/layerswapapp/pull/2175), [pinax #130](https://github.com/pinax-network/substreams-evm-extended/issues/130) |
 
 Circle documents these rules (EVM differences, porting guide) as a **manual checklist**, and Circle's `use-arc` AI skill covers decimals and double counting for frontends. Nothing **runs** the checks or **blocks a deploy**, and nothing helps the user whose payment failed. That's the gap.
+
+## Every finding is a reproducible case
+
+| Field | What Lunua returns |
+|---|---|
+| Trigger | The exact call simulated, pinned to a block |
+| Expected / Actual | What should happen vs what Arc mainnet actually did |
+| Impact | Stated from what was demonstrated (e.g. "availability: deposits revert, sender pays gas, no funds lost") |
+| Proof | Raw JSON-RPC request + response for every simulation, with a `curl` to re-run it yourself |
+| Next step | A Foundry test pinned to the same fork block (`lunua … --repro test/`) |
+
+**Severity policy:** severity is assigned only from demonstrated impact. Findings inferred from bytecode alone are reported as **Unconfirmed** signals and never block a deploy. Live proofs include a 7-byte PREVRANDAO probe (returns 0 on Arc mainnet) and a `balanceOf` truncation probe with a control.
+
+**Verified:** the generated reproductions for PortedVault and the Breadchain tx pass on an Arc mainnet fork: `arc-forge test --network arc`, 6 passed / 0 failed (`scripts/verify-repro.sh`). The LUN-02 test is a template: fill in the target's accounting getter to confirm or refute the signal.
 
 ## What it does
 
@@ -89,7 +105,7 @@ node bin/lunua.mjs tx <hash>              # explain a failed payment
 node bin/lunua.mjs check <address>        # check a deployed contract
 node bin/lunua.mjs check --code <file.json|0xruntimehex>   # before deploying
 ```
-Node 18+, no dependencies (the engine only uses `fetch`). The web page (`docs/`, served by GitHub Pages) is static and calls the Arc RPC straight from the browser, so it needs no server.
+Node 18+, no dependencies (the engine only uses `fetch`). The web page (`docs/`, deployed on Vercel at lunua.vercel.app) is static and calls the Arc RPC straight from the browser, so it needs no server.
 
 Contracts: `contracts/src/`. Build with `node scripts/compile.cjs` (solc 0.8.30).
 
